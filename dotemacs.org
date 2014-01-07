@@ -1,0 +1,501 @@
+Load this file with:
+
+: (require 'org-loaddefs)
+: (org-babel-load-file "~/dotemacs/dotemacs.org")
+
+* Set up org-capture and bind it to F8
+#+BEGIN_SRC emacs-lisp
+  (require 'org-capture)
+  (add-to-list 'org-capture-templates '("n" "Note" entry (clock) "* %^{Note title} %T\n%?"))
+  (add-to-list 'org-capture-templates '("4" "New activity" entry (file "~/org/notes.org") "* %^{New activity}\n%?\n%a" :prepend t :clock-in t))
+  (add-to-list 'org-capture-templates '("e" "dotemacs" entry (file "~/dotemacs/dotemacs.org") "* %^{dotemacs snippet titled}\nAdded on %U.\n#+BEGIN_SRC emacs-lisp\n  %?\n#+END_SRC" :unnarrowed))
+  (add-to-list 'org-capture-templates '("l" "List item from active region" item (clock) "- %i\n" :immediate-finish t))
+  (global-set-key [f8] 'org-capture)
+  (global-set-key [S-f8] 'org-capture-goto-last-stored)
+#+END_SRC
+* Useful key bindings
+** Bind C-c c to compile+reload emacs lisp file
+#+BEGIN_SRC emacs-lisp
+  (eval-after-load "lisp-mode"
+    '(progn
+       (define-key emacs-lisp-mode-map (kbd "C-c c") 'emacs-lisp-byte-compile-and-load)))
+#+END_SRC
+** Bind `l' to "back" in help mode
+#+BEGIN_SRC emacs-lisp
+  (add-hook 'help-mode-hook
+            (lambda () (local-set-key "l" 'help-go-back)))
+#+END_SRC
+** Bind C-backspace to bury-buffer
+#+BEGIN_SRC emacs-lisp
+  (global-set-key (kbd "C-<backspace>") 'bury-buffer)
+#+END_SRC
+** Bind super-i to imenu
+#+BEGIN_SRC emacs-lisp
+  (global-set-key [(super ?i)] 'imenu)
+#+END_SRC
+** Bind PrintScreen to various compile commands
+#+BEGIN_SRC emacs-lisp
+  (global-set-key [print] 'recompile)
+  (global-set-key [(shift print)] 'compile)
+  ;; On my macbook, PrintScreen is called F13...
+  (global-set-key [f13] 'recompile)
+  (global-set-key [(shift f13)] 'compile)
+#+END_SRC
+** Switch windows with C-s-up and C-s-down
+#+BEGIN_SRC emacs-lisp
+  (defun other-window-backwards ()
+    (interactive)
+    (other-window -1))
+  
+  (global-set-key [(control super down)] 'other-window)
+  (global-set-key [(control super up)] 'other-window-backwards)
+#+END_SRC
+** Scroll line by line with s-up and s-down
+#+BEGIN_SRC emacs-lisp
+  (defun scroll-down-one-line ()
+    "Scroll down one line."
+    (interactive)
+    (scroll-down 1))
+  
+  (defun scroll-up-one-line ()
+    "Scroll up one line."
+    (interactive)
+    (scroll-up 1))
+  
+  (global-set-key [(super up)] 'scroll-down-one-line)
+  (global-set-key [(super down)] 'scroll-up-one-line)
+#+END_SRC
+** org-agenda is s-a
+#+BEGIN_SRC emacs-lisp
+  (global-set-key [(super ?a)] 'org-agenda)
+#+END_SRC
+** Bind M-/ to hippie-expand
+#+BEGIN_SRC emacs-lisp
+  (global-set-key [(meta ?/)] 'hippie-expand)
+#+END_SRC
+** Bind C-c l to org-store-link
+#+BEGIN_SRC emacs-lisp
+  (global-set-key "\C-cl" 'org-store-link)
+#+END_SRC
+** Bind s-l to find-library
+#+BEGIN_SRC emacs-lisp
+  (global-set-key [(super l)] 'find-library)
+#+END_SRC
+** Bind C-c f to find-function
+#+BEGIN_SRC emacs-lisp
+  (global-set-key (kbd "C-c f") 'find-function)
+#+END_SRC
+** Various keys for opening URL at point in Firefox
+#+BEGIN_SRC emacs-lisp
+  (global-set-key (kbd "s-<kp-5>") 'browse-url-firefox)
+  (global-set-key (kbd "s-<kp-begin>") 'browse-url-firefox)
+  (global-set-key (kbd "s-t") 'browse-url-firefox)
+#+END_SRC
+** EMMS key bindings
+#+BEGIN_SRC emacs-lisp
+  (global-set-key [Scroll_Lock] 'emms-pause)
+  (global-set-key (kbd "<S-Scroll_Lock>") 'emms-next)
+  (global-set-key (kbd "<C-Scroll_Lock>") 'emms-show)
+  
+  ;; Also use F12, for when scroll lock is not available
+  (global-set-key [f12] 'emms-pause)
+  (global-set-key (kbd "<S-f12>") 'emms-next)
+  (global-set-key (kbd "<C-f12>") 'emms-show)
+#+END_SRC
+** F9 for org-clock-goto
+#+begin_src emacs-lisp
+  (global-set-key [f9] 'org-clock-goto)
+  ;; Also C-f9, if the Mac wants to steal plain f9.
+  (global-set-key (kbd "<C-f9>") 'org-clock-goto)
+#+end_src
+
+** Clock in recent task with F7
+#+BEGIN_SRC emacs-lisp
+  (defun org-clock-in-menu ()
+    (interactive)
+    (org-clock-in (list 4)))
+  (global-set-key [f7] 'org-clock-in-menu)
+#+END_SRC
+* multiple-cursors
+Added on [2013-05-29 Wed 12:31].
+#+BEGIN_SRC emacs-lisp
+  (global-set-key (kbd "C-S-c C-S-c") 'mc/edit-lines)
+  (global-set-key (kbd "C->") 'mc/mark-next-like-this)
+  (global-set-key (kbd "C-<") 'mc/mark-previous-like-this)
+  (global-set-key (kbd "C-c C-<") 'mc/mark-all-like-this)
+#+END_SRC
+* Toggle full screen
+Added on [2013-09-11 Wed 17:59].
+
+Stolen from http://www.emacswiki.org/emacs/FullScreen#toc25.  Why is
+this not part of Emacs?
+#+BEGIN_SRC emacs-lisp
+(defun toggle-fullscreen ()
+  "Toggle full screen"
+  (interactive)
+  (set-frame-parameter
+     nil 'fullscreen
+     (when (not (frame-parameter nil 'fullscreen)) 'fullboth)))
+#+END_SRC
+
+* Erlang stuff
+** compilation-error-regexp-alist hack for eunit
+Added on [2012-06-25 Mon 11:07].
+
+#+begin_src emacs-lisp
+(require 'compile)
+#+end_src
+
+Hm, the format string thing doesn't seem to work...
+See http://debbugs.gnu.org/cgi/bugreport.cgi?bug=11777 .
+#+BEGIN_SRC emacs-lisp :results output silent
+  (setq compilation-error-regexp-alist-alist
+        (delq (assq 'erlang-eunit compilation-error-regexp-alist-alist)
+              compilation-error-regexp-alist-alist))
+  (add-to-list
+   'compilation-error-regexp-alist-alist
+   (cons
+    'erlang-eunit
+    (list
+     "^ *\\(\\([^.:( \t\n]+\\):\\([0-9]+\\)\\):.*\\.\\.\\.\\(?:\\([^*]\\)\\|[*]\\)"
+     ;; file
+     (list 2 "%s.erl" "src/%s.erl" "test/%s.erl")
+     ;; line
+     3
+     ;; column
+     nil
+     ;; type - need to match [^*] after the three dots to be info,
+     ;; otherwise it's an error
+     (cons nil 4)
+     ;; highlight
+     1
+     )))
+  (add-to-list 'compilation-error-regexp-alist 'erlang-eunit)
+  
+#+END_SRC
+
+*** And let's do stacktraces too
+#+BEGIN_SRC emacs-lisp :results output silent
+  (setq compilation-error-regexp-alist-alist
+        (delq (assq 'erlang-eunit-stacktrace compilation-error-regexp-alist-alist)
+              compilation-error-regexp-alist-alist))
+  (add-to-list
+   'compilation-error-regexp-alist-alist
+   (cons
+    'erlang-eunit-stacktrace
+    (list
+     "^[ *]*in \\(?:function\\|call from\\) .* [[(]\\(\\([^:,]+\\)\\(?::\\|, line \\)\\([0-9]+\\)\\)[])]$"
+     ;; file
+     2
+     ;; line
+     3
+     ;; column
+     nil
+     ;; type
+     2
+     ;; hyperlink
+     1
+     )))
+  (add-to-list 'compilation-error-regexp-alist 'erlang-eunit-stacktrace)
+  
+#+END_SRC
+
+*** And assertions
+#+BEGIN_SRC emacs-lisp :results output silent
+  (setq compilation-error-regexp-alist-alist
+        (delq (assq 'erlang-eunit-assert compilation-error-regexp-alist-alist)
+              compilation-error-regexp-alist-alist))
+  (add-to-list
+   'compilation-error-regexp-alist-alist
+   (cons
+    'erlang-eunit-assert
+    (list
+     (concat
+      "^\\(\\(?:::\\|\\*\\*\\)\\(?:error:\\)?{assert[A-Za-z]+_failed\\),"
+      "[ \n]*\\[{module,\\([^}]+\\)},"
+      "[ \n]*{line,\\([0-9]+\\)}")
+     ;; file
+     (list 2 "%s.erl" "src/%s.erl" "test/%s.erl")
+     ;; line
+     3
+     ;; column
+     nil
+     ;; type
+     2
+     ;; hyperlink
+     1
+     )))
+  (add-to-list 'compilation-error-regexp-alist 'erlang-eunit-assert)
+  
+#+END_SRC
+
+*** And raw stacktraces that end up in the output
+#+BEGIN_SRC emacs-lisp :results output silent
+  (setq compilation-error-regexp-alist-alist
+        (delq (assq 'erlang-raw-stacktrace compilation-error-regexp-alist-alist)
+              compilation-error-regexp-alist-alist))
+  (add-to-list
+   'compilation-error-regexp-alist-alist
+   (cons
+    'erlang-raw-stacktrace
+    (list
+     "{file,[[:space:]]*\"\\([^\"]+\\)\"},[[:space:]]*{line,[[:space:]]*\\([0-9]+\\)}"
+     ;; file
+     1
+     ;; line
+     2
+     ;; column
+     nil
+     ;; type
+     2
+     ;; hyperlink
+     1
+     )))
+  (add-to-list 'compilation-error-regexp-alist 'erlang-raw-stacktrace)
+  
+#+END_SRC
+
+*** And let's do lager output (possibly with column numbers) as well
+#+BEGIN_SRC emacs-lisp :results output silent
+  (setq compilation-error-regexp-alist-alist
+        (delq (assq 'erlang-lager-message compilation-error-regexp-alist-alist)
+              compilation-error-regexp-alist-alist))
+  (add-to-list
+   'compilation-error-regexp-alist-alist
+   (cons
+    'erlang-lager-message
+    (list
+     "^....-..-.. ..:..:..\\.... \\[\\(?:\\(info\\)\\|[a-z]+\\)\\] <[0-9.]+>@\\([^:]+\\):\\(?:[^:]+\\):{\\([0-9]+\\),\\([0-9]+\\)}"
+     ;; file
+     (list 2 "%s.erl")
+     ;; line
+     3
+     ;; column
+     4
+     ;; type
+     (cons nil 1)
+     ;; hyperlink
+     2
+     )))
+  (add-to-list 'compilation-error-regexp-alist 'erlang-lager-message)
+  
+#+END_SRC
+
+** Ignore .eunit and .qc in rgrep
+Added on [2012-05-30 Wed 16:28].
+
+These directories are created by rebar, and contain complete copies of
+the source code in =src/=.  No point in searching through those
+directories.
+#+BEGIN_SRC emacs-lisp
+  (eval-after-load "grep"
+    '(progn
+       (add-to-list 'grep-find-ignored-directories ".eunit")
+       (add-to-list 'grep-find-ignored-directories ".qc")))
+#+END_SRC
+** rgrep alias for *.[eh]rl
+Added on [2010-08-03 Tue 15:08].
+#+BEGIN_SRC emacs-lisp
+  (eval-after-load "grep"
+    '(add-to-list 'grep-files-aliases '("erl" . "*.[eh]rl") :append))
+#+END_SRC
+** Try harder to find include files in flymake			    :flymake:
+#+BEGIN_SRC emacs-lisp
+  (defun mh-simple-get-deps-code-path-dirs ()
+    ;; Why complicate things?
+    (and (buffer-file-name)
+         (let ((default-directory (file-name-directory (buffer-file-name))))
+           (file-expand-wildcards "../../*/ebin"))))
+  
+  (defun mh-simple-get-deps-include-dirs ()
+    (list "../include"))
+  
+  (setq erlang-flymake-get-code-path-dirs-function 'mh-simple-get-deps-code-path-dirs
+        erlang-flymake-get-include-dirs-function 'mh-simple-get-deps-include-dirs)
+#+END_SRC
+** Don't warn for exported variables in erlang-flymake		    :flymake:
+[2010-12-21 Tue 18:14]
+#+begin_src emacs-lisp
+  (eval-after-load "erlang-flymake"
+    '(setq erlang-flymake-extra-opts
+           (delete "+warn_export_vars" erlang-flymake-extra-opts)))
+#+end_src
+** Flymake: disable GUI warnings, log in message buffer		    :flymake:
+Added on [2012-05-25 Fri 12:13].
+#+BEGIN_SRC emacs-lisp
+  (setq flymake-gui-warnings-enabled nil
+        flymake-log-level 0
+        )
+#+END_SRC
+** Be careful about flymake					    :flymake:
+Added on [2012-06-25 Mon 16:11].
+#+BEGIN_SRC emacs-lisp
+  (defun maybe-turn-on-flymake()
+    (when (and buffer-file-name (file-name-directory buffer-file-name))
+      (unless (file-remote-p buffer-file-name)
+        (flymake-mode))))
+  
+  (eval-after-load "erlang-flymake"
+    '(progn
+       (remove-hook 'erlang-mode-hook 'flymake-mode)
+       (add-hook 'erlang-mode-hook 'maybe-turn-on-flymake)))
+  
+  (eval-after-load "erlang" '(require 'erlang-flymake))
+#+END_SRC
+
+* Org-mode stuff
+** Wrap in example tags
+Added on [2012-05-21 Mon 15:10].
+#+BEGIN_SRC emacs-lisp
+  (defun wrap-in-example-tags (beg end)
+    (interactive "r")
+    (goto-char end)
+    (unless (bolp)
+      (insert "\n"))
+    (insert "#+end_example\n")
+    (goto-char beg)
+    (unless (bolp)
+      (insert "\n"))
+    (insert "#+begin_example\n"))
+  (eval-after-load "org"
+    '(define-key org-mode-map (kbd "C-c e") 'wrap-in-example-tags))
+#+END_SRC
+
+
+* M-x ecd, to open eshell in the specified directory
+#+BEGIN_SRC emacs-lisp
+  (defun ecd (d)
+    (interactive
+     (list (expand-file-name (read-directory-name "cd: " nil nil t))))
+    (eshell)(eshell/cd d))
+#+END_SRC
+* diff-mode bindings for magit-commit-mode
+Added on [2013-11-11 Mon 16:08].
+#+BEGIN_SRC emacs-lisp
+  (eval-after-load "magit"
+    '(progn
+       (define-key magit-commit-mode-map (kbd "C-c C-w") #'diff-tell-file-name)
+       (define-key magit-commit-mode-map (kbd "C-c C-a") #'diff-apply-hunk)
+       (define-key magit-commit-mode-map (kbd "C-c C-s") #'diff-split-hunk)))
+#+END_SRC
+* Did you mean underscore? :erlang:
+Added on [2013-12-04 Wed 17:21].
+#+BEGIN_SRC emacs-lisp
+  (defun erlang-did-you-mean-underscore ()
+    "Insert either a hyphen or an underscore.
+  Why is it so hard to hold down the shift key when I really want
+  an underscore?
+  
+  If the word before point consists only of lowercase letters and
+  underscores, then I'm probably writing an atom and want an
+  underscore.  Otherwise, I'm probably writing a variable name, and
+  want a hyphen / minus sign."
+    (interactive)
+    (let ((case-fold-search nil))
+      (if (save-match-data (looking-back "\\<[a-z_]+"))
+          (progn
+            (message "Did you mean underscore?")
+            (insert "_"))
+        (insert "-"))))
+  
+  (eval-after-load "erlang"
+    '(define-key erlang-mode-map "-" 'erlang-did-you-mean-underscore))
+#+END_SRC
+* ANSI colours in compilation buffer
+Added on [2013-12-10 Tue 10:08].
+
+Inspired by http://stackoverflow.com/a/3072831/113848.
+#+BEGIN_SRC emacs-lisp
+  (require 'ansi-color)
+  (defun colourise-compilation-buffer ()
+    ;; grep output gets all red for some reason
+    (unless (derived-mode-p 'grep-mode)
+      (let ((inhibit-read-only t))
+        (ansi-color-apply-on-region (point-min) (point-max)))))
+  (eval-after-load "compile"
+    '(add-hook 'compilation-filter-hook 'colourise-compilation-buffer))
+#+END_SRC
+* Fix Wingdings in shr
+Added on [2013-12-20 Fri 17:05].
+#+BEGIN_SRC emacs-lisp
+  (defun shr-tag-span (cont)
+    ;; NB: this will catch wingdings2 too
+    (if (let ((case-fold-search t)) (string-match-p "font-family:\s*wingdings" (or (cdr (assq :style cont)) "")))
+        (dolist (sub cont)
+          (cond
+           ((eq (car sub) 'text)
+            (shr-insert (wingdings-to-unicode (cdr sub))))
+           ((listp (cdr sub))
+            (shr-descend sub))))
+      (shr-generic cont)))
+  
+  (defun wingdings-to-unicode (text)
+    (let ((mapping '((?J . #x263a)
+                     (?K . #x1f610)
+                     (?L . #x2639))))
+      (cl-map 'string (lambda (c)
+                        (or (cdr (assq c mapping))
+                            c))
+              text)))
+#+END_SRC
+* Get info from Junit XML files
+Added on [2013-12-27 Fri 11:14].
+#+BEGIN_SRC emacs-lisp
+  (defvar my-junit-xml-failures ())
+  
+  (defun my-junit-xml-read-dir (dir)
+    (interactive "DDirectory: ")
+    (let ((files (directory-files dir t "\\.xml$" t))
+          (skipped 0)
+          (failure 0))
+      (if (null files)
+          (user-error "No *.xml files in %s" dir)
+        (dolist (file files)
+          (let ((root (car (xml-parse-file file)))
+                (timestamp (nth 5 (file-attributes file))))
+            (dolist (testcase (xml-node-children root))
+              (when (eq (car-safe testcase) 'testcase)
+                (let* ((name (xml-get-attribute testcase 'name))
+                       (entry (or (assoc name my-junit-xml-failures)
+                                  (list name () ()))))
+                  (cond
+                   ((xml-get-children testcase 'failure)
+                    (incf failure)
+                    (cl-pushnew timestamp (second entry) :test 'equal))
+                   ((xml-get-children testcase 'skipped)
+                    (incf skipped)
+                    (cl-pushnew timestamp (third entry) :test 'equal)))
+                  (when (or (second entry) (third entry))
+                    (cl-pushnew entry my-junit-xml-failures)))))))
+        (message "%d failures, %d skipped" failure skipped))))
+  
+  (defun my-junit-xml-display ()
+    (interactive)
+    (with-current-buffer (get-buffer-create "*junit*")
+      (let ((inhibit-read-only t)
+            (longest-length 0)
+            testcases)
+        (erase-buffer)
+  
+        (dolist (testcase my-junit-xml-failures)
+          (setq longest-length (max longest-length (length (first testcase))))
+          (push (list (first testcase)
+                      (+ (length (second testcase))
+                         (length (third testcase)))
+                      (car (sort (append (second testcase) (third testcase))
+                                 (lambda (x y) (time-less-p y x)))))
+                testcases))
+  
+        (setq testcases (sort testcases (lambda (x y)
+                                          (or
+                                           (> (second x) (second y))
+                                           (and (= (second x) (second y))
+                                                (time-less-p (third y) (third x)))))))
+  
+        (dolist (testcase testcases)
+          (insert (first testcase) (make-string (- longest-length (length (first testcase))) ?\s) "   "
+                  (number-to-string (second testcase)) " failures, "
+                  "last on " (format-time-string "%Y-%m-%d %T" (third testcase)) "\n"))
+  
+        (display-buffer (current-buffer)))))
+#+END_SRC
