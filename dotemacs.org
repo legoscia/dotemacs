@@ -526,3 +526,16 @@ If there are unbound variables, ask for their values.
     '(progn
        (define-key emacs-lisp-mode-map (kbd "C-x C-e") 'eval-last-sexp-dwim)))
 #+END_SRC
+* Pretty lambdas in Lisp modes
+#+begin_src emacs-lisp
+  ;; stolen from http://www.emacswiki.org/cgi-bin/wiki/PrettyLambda
+  (defun pretty-lambdas ()
+    (interactive)
+    (font-lock-add-keywords
+     nil `(("(\\(lambda\\>\\)"
+            (0 (progn (compose-region (match-beginning 1) (match-end 1)
+                                      ,(make-char 'greek-iso8859-7 107))
+                      nil))))))
+  (add-hook 'emacs-lisp-mode-hook 'pretty-lambdas)
+  (add-hook 'lisp-mode-hook 'pretty-lambdas)
+#+end_src
