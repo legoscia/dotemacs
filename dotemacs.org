@@ -500,3 +500,29 @@ Added on [2013-12-27 Fri 11:14].
   
         (display-buffer (current-buffer)))))
 #+END_SRC
+* eval-last-sexp-dwim for C-x C-e
+If there are unbound variables, ask for their values.
+#+BEGIN_SRC emacs-lisp
+  (defun eval-last-sexp-dwim ()
+    "Evaluate sexp before point, asking for values of unbound variables."
+    (interactive)
+    (lexical-let ((sexp (preceding-sexp)))
+      (labels
+          ((eval-it (the-sexp)
+                    (condition-case e
+                        (eval the-sexp)
+                      (void-variable
+                       (lexical-let*
+                           ((var (cadr e))
+                            (val (car
+                                  (read-from-string
+                                   (read-from-minibuffer
+                                    (format "Value for `%s': " var)))))
+                            (new-sexp `(let ((,var ,val))
+                                         ,the-sexp)))
+                         (eval-it new-sexp))))))
+        (message "%S" (eval-it sexp)))))
+  (eval-after-load "lisp-mode"
+    '(progn
+       (define-key emacs-lisp-mode-map (kbd "C-x C-e") 'eval-last-sexp-dwim)))
+#+END_SRC
