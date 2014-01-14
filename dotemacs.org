@@ -418,17 +418,6 @@ Inspired by http://stackoverflow.com/a/3072831/113848.
 * Fix Wingdings in shr
 Added on [2013-12-20 Fri 17:05].
 #+BEGIN_SRC emacs-lisp
-  (defun shr-tag-span (cont)
-    ;; NB: this will catch wingdings2 too
-    (if (let ((case-fold-search t)) (string-match-p "font-family:\s*wingdings" (or (cdr (assq :style cont)) "")))
-        (dolist (sub cont)
-          (cond
-           ((eq (car sub) 'text)
-            (shr-insert (wingdings-to-unicode (cdr sub))))
-           ((listp (cdr sub))
-            (shr-descend sub))))
-      (shr-generic cont)))
-  
   (defun wingdings-to-unicode (text)
     (let ((mapping '((?J . #x263a)
                      (?K . #x1f610)
@@ -437,6 +426,18 @@ Added on [2013-12-20 Fri 17:05].
                         (or (cdr (assq c mapping))
                             c))
               text)))
+  
+  (eval-after-load "shr"
+    '(defadvice shr-tag-span (around wingdings-to-unicode (cont) activate)
+       ;; NB: this will catch wingdings2 too
+       (if (let ((case-fold-search t)) (string-match-p "font-family:\s*wingdings" (or (cdr (assq :style cont)) "")))
+           (dolist (sub cont)
+             (cond
+              ((eq (car sub) 'text)
+               (shr-insert (wingdings-to-unicode (cdr sub))))
+              ((listp (cdr sub))
+               (shr-descend sub))))
+         ad-do-it)))
 #+END_SRC
 * Get info from Junit XML files
 Added on [2013-12-27 Fri 11:14].
