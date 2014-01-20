@@ -539,3 +539,9 @@ If there are unbound variables, ask for their values.
   (add-hook 'emacs-lisp-mode-hook 'pretty-lambdas)
   (add-hook 'lisp-mode-hook 'pretty-lambdas)
 #+end_src
+* Auto fill mode in org-capture mode
+Added on [2014-01-14 Tue 14:44].
+#+BEGIN_SRC emacs-lisp
+  (eval-after-load "org-capture"
+    '(add-hook 'org-capture-mode-hook 'turn-on-auto-fill))
+#+END_SRC
