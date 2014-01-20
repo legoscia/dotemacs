@@ -545,3 +545,19 @@ Added on [2014-01-14 Tue 14:44].
   (eval-after-load "org-capture"
     '(add-hook 'org-capture-mode-hook 'turn-on-auto-fill))
 #+END_SRC
+* Convert Libreoffice document to PDF
+Added on [2013-06-14 Fri 20:15].
+#+BEGIN_SRC emacs-lisp
+  (defun my-libreoffice-to-pdf (filename)
+    "Convert Libreoffice document to PDF.
+  Note that Libreoffice must not be running."
+    (interactive "fLibreoffice document to convert to PDF: ")
+    (let ((buffer (get-buffer-create "*Libreoffice to PDF*")))
+      (unless (zerop
+               (call-process
+                "/Applications/LibreOffice.app/Contents/MacOS/soffice"
+                nil buffer t
+                "--headless" "--convert-to" "pdf" filename))
+        (message "Conversion failed")
+        (display-buffer buffer))))
+#+END_SRC
