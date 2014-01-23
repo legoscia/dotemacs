@@ -561,3 +561,8 @@ Added on [2013-06-14 Fri 20:15].
         (message "Conversion failed")
         (display-buffer buffer))))
 #+END_SRC
+* delete-process-interactively
+Added on [2010-08-16 Mon 16:52].
+#+BEGIN_SRC emacs-lisp
+  (defun delete-process-i(p)(interactive `(,(completing-read"Kill proc: "(mapcar 'process-name(process-list))()t)))(delete-process p))
+#+END_SRC
