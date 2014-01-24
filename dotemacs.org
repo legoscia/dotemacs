@@ -301,14 +301,18 @@ Added on [2010-08-03 Tue 15:08].
 #+END_SRC
 ** Try harder to find include files in flymake			    :flymake:
 #+BEGIN_SRC emacs-lisp
+  (defvar mh-erlang-flymake-code-path-dirs (list "../../*/ebin")
+    "List of directories to add to code path for Erlang Flymake.
+  Wildcards are expanded.")
+  
   (defun mh-simple-get-deps-code-path-dirs ()
     ;; Why complicate things?
     (and (buffer-file-name)
          (let ((default-directory (file-name-directory (buffer-file-name))))
-           (file-expand-wildcards "../../*/ebin"))))
+           (apply 'append (mapcar 'file-expand-wildcards mh-erlang-flymake-code-path-dirs)))))
   
   (defun mh-simple-get-deps-include-dirs ()
-    (list "../include"))
+    (list "../include" "../src"))
   
   (setq erlang-flymake-get-code-path-dirs-function 'mh-simple-get-deps-code-path-dirs
         erlang-flymake-get-include-dirs-function 'mh-simple-get-deps-include-dirs)
