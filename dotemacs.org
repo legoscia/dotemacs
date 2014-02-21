@@ -654,3 +654,21 @@ the "mode line active" face even in inactive buffers.
     '(set-face-attribute 'org-mode-line-clock nil
                          :inherit nil))
 #+END_SRC
+* Update mode line face on focus
+Added on [2014-02-21 Fri 16:45].
+#+BEGIN_SRC emacs-lisp
+  (defvar my-mode-line-active-background "gray75")
+  (defvar my-mode-line-inactive-background "gray40")
+  
+  (defun my-unhighlight-mode-line ()
+    (set-face-attribute 'mode-line nil
+                        :background my-mode-line-inactive-background))
+  
+  (add-hook 'focus-out-hook 'my-unhighlight-mode-line)
+  
+  (defun my-highlight-mode-line ()
+    (set-face-attribute 'mode-line nil
+                        :background my-mode-line-active-background))
+  
+  (add-hook 'focus-in-hook 'my-highlight-mode-line)
+#+END_SRC
