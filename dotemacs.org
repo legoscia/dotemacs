@@ -570,3 +570,48 @@ Added on [2010-08-16 Mon 16:52].
 #+BEGIN_SRC emacs-lisp
   (defun delete-process-i(p)(interactive `(,(completing-read"Kill proc: "(mapcar 'process-name(process-list))()t)))(delete-process p))
 #+END_SRC
+* proced erlang magic
+Added on [2014-01-27 Mon 10:53].
+
+Add a filter for viewing only BEAM processes (hit =f= in the proced
+buffer and type =beam=):
+#+BEGIN_SRC emacs-lisp
+  (eval-after-load "proced"
+    '(add-to-list 'proced-filter-alist
+                  '(beam (comm . "^beam"))))
+#+END_SRC
+
+Add an extra field for the node name of the Erlang node:
+
+#+BEGIN_SRC emacs-lisp
+  (defun my-proced-erlang-node-name (attrs)
+    ;; Proced only displays attributes that are present for the Emacs
+    ;; process - so we need to return a non-nil value for non-beam
+    ;; processes.
+    (cons 'node
+          (or
+           (when (string-prefix-p "beam" (cdr (assq 'comm attrs)))
+             (let ((args (or (cdr (assq 'args attrs))
+                             ;; On OSX, process-attributes doesn't return args (yet?)
+                             (shell-command-to-string
+                              (concat "ps -p " (number-to-string (cdr (assq 'pid attrs)))
+                                      " -o args=")))))
+               (when (string-match "-s?name \\([^ ]+\\)" args)
+                 (match-string 1 args))))
+           "")))
+  
+  (eval-after-load "proced"
+    '(progn
+       (add-to-list 'proced-custom-attributes 'my-proced-erlang-node-name)
+       (add-to-list 'proced-grammar-alist
+                    '(node "Erlang node" "%s" left proced-string-lessp nil (node pid) (nil t nil)))))
+#+END_SRC
+
+And add it to a new format config (hit =F= in the proced buffer and
+type =erlang=:
+
+#+BEGIN_SRC emacs-lisp
+  (eval-after-load "proced"
+    '(add-to-list 'proced-format-alist
+                  '(erlang user pid tree pcpu pmem start time (args comm) node)))
+#+END_SRC
