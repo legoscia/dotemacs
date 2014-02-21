@@ -615,3 +615,30 @@ type =erlang=:
     '(add-to-list 'proced-format-alist
                   '(erlang user pid tree pcpu pmem start time (args comm) node)))
 #+END_SRC
+* Set SMTP server depending on From address
+Added on [2014-02-21 Fri 14:45].
+
+An amalgamation of various solutions proposed at
+http://www.emacswiki.org/emacs/MultipleSMTPAccounts .
+
+#+BEGIN_SRC emacs-lisp
+  (defvar my-smtp-servers ()
+    "Map e-mail address to SMTP server hostname.
+  To set username, add \"machine example.com login foo\" to ~/.authinfo.")
+  
+  (with-eval-after-load "smtpmail"
+    (defadvice smtpmail-via-smtp (around set-smtp-server-from-header activate)
+      (let ((smtpmail-smtp-server
+             (let ((from-address (save-restriction
+                                   (message-narrow-to-headers)
+                                   (mail-fetch-field "from"))))
+               (or
+                (and from-address
+                     (cdr (assoc (second
+                                  (mail-extract-address-components
+                                   from-address))
+                                 my-smtp-servers)))
+                smtpmail-smtp-server))))
+        (message "Using SMTP server %s" smtpmail-smtp-server)
+        ad-do-it)))
+#+END_SRC
