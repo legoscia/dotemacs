@@ -642,3 +642,15 @@ http://www.emacswiki.org/emacs/MultipleSMTPAccounts .
         (message "Using SMTP server %s" smtpmail-smtp-server)
         ad-do-it)))
 #+END_SRC
+* Fix org-mode-line-clock
+  CLOCK: [2014-02-21 Fri 16:28]--[2014-02-21 Fri 16:58] =>  0:30
+Added on [2014-02-21 Fri 16:28].
+
+=org-mode-line-clock= is defined through =org-copy-face= as inheriting
+from =mode-line=.  However, that's not what I want, because it gets
+the "mode line active" face even in inactive buffers.
+#+BEGIN_SRC emacs-lisp
+  (eval-after-load "org-faces"
+    '(set-face-attribute 'org-mode-line-clock nil
+                         :inherit nil))
+#+END_SRC
