@@ -389,19 +389,22 @@ Added on [2013-12-04 Wed 17:21].
     "Insert either a hyphen or an underscore.
   Why is it so hard to hold down the shift key when I really want
   an underscore?
-  
+
   If the word before point consists only of lowercase letters and
   underscores, then I'm probably writing an atom and want an
   underscore.  Otherwise, I'm probably writing a variable name, and
   want a hyphen / minus sign."
     (interactive)
     (let ((case-fold-search nil))
-      (if (save-match-data (looking-back "\\<[a-z_]+"))
+      (if (and
+           ;; This does not apply to comments.
+           (null (nth 4 (syntax-ppss)))
+           (save-match-data (looking-back "\\<[a-z_]+")))
           (progn
             (message "Did you mean underscore?")
             (insert "_"))
         (insert "-"))))
-  
+
   (eval-after-load "erlang"
     '(define-key erlang-mode-map "-" 'erlang-did-you-mean-underscore))
 #+END_SRC
