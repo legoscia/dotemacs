@@ -637,7 +637,7 @@ http://www.emacswiki.org/emacs/MultipleSMTPAccounts .
                                    (mail-fetch-field "from"))))
                (or
                 (and from-address
-                     (cdr (assoc (second
+                     (cdr (assoc (cadr
                                   (mail-extract-address-components
                                    from-address))
                                  my-smtp-servers)))
