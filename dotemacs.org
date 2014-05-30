@@ -395,10 +395,13 @@ Added on [2013-12-04 Wed 17:21].
   underscore.  Otherwise, I'm probably writing a variable name, and
   want a hyphen / minus sign."
     (interactive)
-    (let ((case-fold-search nil))
+    (let ((case-fold-search nil)
+          (parser-state (syntax-ppss)))
       (if (and
            ;; This does not apply to comments.
-           (null (nth 4 (syntax-ppss)))
+           (null (nth 4 parser-state))
+           ;; Nor to strings.
+           (null (nth 3 parser-state))
            (save-match-data (looking-back "\\<[a-z_]+")))
           (progn
             (message "Did you mean underscore?")
