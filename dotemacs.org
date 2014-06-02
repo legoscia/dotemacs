@@ -679,3 +679,12 @@ Added on [2014-02-21 Fri 16:45].
   
   (add-hook 'focus-in-hook 'my-highlight-mode-line)
 #+END_SRC
+* Always save buffer text before reverting (saves lives!)
+#+BEGIN_SRC emacs-lisp
+  (defun maybe-save-before-reverting ()
+    (unless (or (bound-and-true-p auto-revert-mode)
+                (bound-and-true-p auto-revert-tail-mode))
+      (kill-new (buffer-string))
+      (message "Previous buffer text saved to kill ring")))
+  (add-hook 'before-revert-hook 'maybe-save-before-reverting)
+#+END_SRC
