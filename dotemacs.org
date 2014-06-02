@@ -688,3 +688,60 @@ Added on [2014-02-21 Fri 16:45].
       (message "Previous buffer text saved to kill ring")))
   (add-hook 'before-revert-hook 'maybe-save-before-reverting)
 #+END_SRC
+* escript zip support for archive-mode				     :erlang:
+Added on [2014-05-23 Fri 18:26].
+#+BEGIN_SRC emacs-lisp
+  (defvar archive-escript-zip-hook nil)
+
+  (defun archive-escript-zip--narrow ()
+    (widen)
+    (goto-char (point-min))
+    (search-forward-regexp "^\\(PK00\\)?[P]K\003\004")
+    (narrow-to-region (match-beginning 0) (point-max)))
+
+  (defun archive-escript-zip-summarize ()
+    (archive-escript-zip--narrow)
+    (archive-zip-summarize))
+
+  (defun archive-escript-zip-extract (_archive name)
+    (let ((temp-file (make-temp-file "escript-archive" nil ".zip"))
+          (coding-system-for-write 'binary))
+      (unwind-protect
+          (progn
+            (with-current-buffer archive-superior-buffer
+              (save-restriction
+                (widen)
+                (write-region archive-proper-file-start
+                              (point-max)
+                              temp-file nil :silent)))
+            (archive-zip-extract temp-file name))
+        (delete-file temp-file))))
+
+  (defun archive-escript-zip-find-type (old-fun)
+    (widen)
+    (goto-char (point-min))
+    (let (case-fold-search)
+      (cond
+       ((and (looking-at "#!.*escript")
+             (search-forward-regexp "^\\(PK00\\)?[P]K\003\004" nil t))
+        'escript-zip)
+       (t
+        (funcall old-fun)))))
+
+  (with-eval-after-load "arc-mode"
+    (advice-add 'archive-find-type :around #'archive-escript-zip-find-type))
+
+  (defun archive-escript-zip--maybe-turn-on ()
+    (save-excursion
+      (save-restriction
+        (when (eq (ignore-errors (archive-find-type)) 'escript-zip)
+          (run-with-idle-timer
+           0.1 nil
+           (lambda (buffer)
+             (with-current-buffer buffer
+               (archive-mode)))
+           (current-buffer))))))
+
+  (with-eval-after-load "erlang"
+    (add-hook 'erlang-mode-hook 'archive-escript-zip--maybe-turn-on))
+#+END_SRC
