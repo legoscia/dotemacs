@@ -127,9 +127,10 @@ Added on [2013-05-29 Wed 12:31].
 * Toggle full screen
 Added on [2013-09-11 Wed 17:59].
 
-Stolen from http://www.emacswiki.org/emacs/FullScreen#toc25.  Why is
-this not part of Emacs?
-#+BEGIN_SRC emacs-lisp
+Stolen from http://www.emacswiki.org/emacs/FullScreen#toc25.  +Why is
+this not part of Emacs?+ This is available as
+=toggle-frame-fullscreen= as of Emacs 24.4.
+#+BEGIN_SRC emacs-lisp :tangle no
 (defun toggle-fullscreen ()
   "Toggle full screen"
   (interactive)
