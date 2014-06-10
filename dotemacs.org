@@ -603,10 +603,10 @@ Add an extra field for the node name of the Erlang node:
                              (shell-command-to-string
                               (concat "ps -p " (number-to-string (cdr (assq 'pid attrs)))
                                       " -o args=")))))
-               (when (string-match "-s?name \\([^ ]+\\)" args)
+               (when (string-match "-s?name \\([^[:space:]]+\\)" args)
                  (match-string 1 args))))
            "")))
-  
+
   (eval-after-load "proced"
     '(progn
        (add-to-list 'proced-custom-attributes 'my-proced-erlang-node-name)
