@@ -732,6 +732,7 @@ Added on [2014-05-23 Fri 18:26].
     (advice-add 'archive-find-type :around #'archive-escript-zip-find-type))
 
   (defun archive-escript-zip--maybe-turn-on ()
+    (require 'arc-mode)
     (save-excursion
       (save-restriction
         (when (eq (ignore-errors (archive-find-type)) 'escript-zip)
