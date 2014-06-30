@@ -746,3 +746,35 @@ Added on [2014-05-23 Fri 18:26].
   (with-eval-after-load "erlang"
     (add-hook 'erlang-mode-hook 'archive-escript-zip--maybe-turn-on))
 #+END_SRC
+* Avoid CFGERR disabling Flymake
+Added on [2014-06-30 Mon 12:18].
+
+Adapted from http://debbugs.gnu.org/cgi/bugreport.cgi?bug=2491.
+
+If a Flymake compilation fails, but there are no error messages for
+the file being compiled (i.e., all errors are in included files), then
+Flymake will switch itself off and say:
+
+#+BEGIN_QUOTE
+switched OFF Flymake mode for buffer foo.erl|src due to fatal status CFGERR
+#+END_QUOTE
+
+This change makes it just display =:CFGERR= in the mode line, without
+deactivating Flymake.
+
+#+BEGIN_SRC emacs-lisp
+  (require 'cl-lib)
+  (defun my-flymake-cfgerr-is-benign (orig-fun &rest args)
+    "Don't let `flymake-post-syntax-check' deactivate Flymake.
+  As described in http://debbugs.gnu.org/cgi/bugreport.cgi?bug=2491,
+  CFGERR errors can be benign conditions."
+    ;; Using `cl-letf' as a kind of temporary advice.
+    (cl-letf (((symbol-function 'flymake-report-fatal-status)
+               (lambda (_status _warning)
+                 (flymake-report-status "0/0" ":CFGERR"))))
+      (apply orig-fun args)))
+
+  (with-eval-after-load "flymake"
+    (advice-add 'flymake-post-syntax-check :around 'my-flymake-cfgerr-is-benign))
+
+#+END_SRC
