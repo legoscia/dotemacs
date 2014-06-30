@@ -746,7 +746,7 @@ Added on [2014-05-23 Fri 18:26].
   (with-eval-after-load "erlang"
     (add-hook 'erlang-mode-hook 'archive-escript-zip--maybe-turn-on))
 #+END_SRC
-* Avoid CFGERR disabling Flymake
+* Avoid CFGERR disabling Flymake				    :flymake:
 Added on [2014-06-30 Mon 12:18].
 
 Adapted from http://debbugs.gnu.org/cgi/bugreport.cgi?bug=2491.
