@@ -452,6 +452,12 @@ Added on [2013-12-20 Fri 17:05].
 #+END_SRC
 * Get info from Junit XML files
 Added on [2013-12-27 Fri 11:14].
+
+If you run your build with =M-x compile=, and it produces JUnit-style
+XML files in one and only one directory, then call
+=my-junit-xml-always-display-after-compile= for a summary of the test
+results, sorted by most frequent failures.
+
 #+BEGIN_SRC emacs-lisp
   (defvar my-junit-xml-failures ())
 
@@ -481,6 +487,10 @@ Added on [2013-12-27 Fri 11:14].
                     (cl-pushnew entry my-junit-xml-failures)))))))
         (message "%d failures, %d skipped" failure skipped))))
 
+  (defvar my-junit-xml-latest-display (list 0 0 0)
+    "The time when `my-junit-xml-display' was last called.
+  We keep this to be able to highlight recent failures.")
+
   (defun my-junit-xml-display ()
     (interactive)
     (with-current-buffer (get-buffer-create "*junit*")
@@ -505,9 +515,16 @@ Added on [2013-12-27 Fri 11:14].
                                                 (time-less-p (third y) (third x)))))))
 
         (dolist (testcase testcases)
-          (insert (first testcase) (make-string (- longest-length (length (first testcase))) ?\s) "   "
-                  (number-to-string (second testcase)) " failures, "
-                  "last on " (format-time-string "%Y-%m-%d %T" (third testcase)) "\n"))
+          (let ((text (concat (first testcase) (make-string (- longest-length (length (first testcase))) ?\s) "   "
+                              (number-to-string (second testcase)) " failures, "
+                              "last on " (format-time-string "%Y-%m-%d %T" (third testcase)) "\n")))
+            ;; If this test failed since we last displayed junit
+            ;; results, highlight it.
+            (when (time-less-p my-junit-xml-latest-display (third testcase))
+              (add-text-properties 0 (length text) '(face highlight) text))
+            (insert text)))
+
+        (setq my-junit-xml-latest-display (current-time))
 
         (display-buffer (current-buffer)))))
 
