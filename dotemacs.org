@@ -454,7 +454,7 @@ Added on [2013-12-20 Fri 17:05].
 Added on [2013-12-27 Fri 11:14].
 #+BEGIN_SRC emacs-lisp
   (defvar my-junit-xml-failures ())
-  
+
   (defun my-junit-xml-read-dir (dir)
     (interactive "DDirectory: ")
     (let ((files (directory-files dir t "\\.xml$" t))
@@ -480,7 +480,7 @@ Added on [2013-12-27 Fri 11:14].
                   (when (or (second entry) (third entry))
                     (cl-pushnew entry my-junit-xml-failures)))))))
         (message "%d failures, %d skipped" failure skipped))))
-  
+
   (defun my-junit-xml-display ()
     (interactive)
     (with-current-buffer (get-buffer-create "*junit*")
@@ -488,7 +488,7 @@ Added on [2013-12-27 Fri 11:14].
             (longest-length 0)
             testcases)
         (erase-buffer)
-  
+
         (dolist (testcase my-junit-xml-failures)
           (setq longest-length (max longest-length (length (first testcase))))
           (push (list (first testcase)
@@ -497,19 +497,36 @@ Added on [2013-12-27 Fri 11:14].
                       (car (sort (append (second testcase) (third testcase))
                                  (lambda (x y) (time-less-p y x)))))
                 testcases))
-  
+
         (setq testcases (sort testcases (lambda (x y)
                                           (or
                                            (> (second x) (second y))
                                            (and (= (second x) (second y))
                                                 (time-less-p (third y) (third x)))))))
-  
+
         (dolist (testcase testcases)
           (insert (first testcase) (make-string (- longest-length (length (first testcase))) ?\s) "   "
                   (number-to-string (second testcase)) " failures, "
                   "last on " (format-time-string "%Y-%m-%d %T" (third testcase)) "\n"))
-  
+
         (display-buffer (current-buffer)))))
+
+  (defvar my-junit-xml-dir nil)
+
+  (defun my-junit-xml-always-display-after-compile (dir)
+    "After a compilation finishes, display JUnit info.
+  Update from all *.xml files in DIR."
+    (interactive "DDirectory: ")
+    (setq my-junit-xml-dir dir)
+    (add-hook 'compilation-finish-functions 'my-junit-xml-after-compilation))
+
+  (defun my-junit-xml-never-display-after-compile ()
+    (interactive)
+    (remove-hook 'compilation-finish-functions 'my-junit-xml-after-compilation))
+
+  (defun my-junit-xml-after-compilation (compilation-buffer _status)
+    (my-junit-xml-read-dir my-junit-xml-dir)
+    (my-junit-xml-display))
 #+END_SRC
 * eval-last-sexp-dwim for C-x C-e
 If there are unbound variables, ask for their values.
