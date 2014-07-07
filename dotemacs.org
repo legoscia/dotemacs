@@ -477,7 +477,8 @@ results, sorted by most frequent failures.
                        (entry (or (assoc name my-junit-xml-failures)
                                   (list name () ()))))
                   (cond
-                   ((xml-get-children testcase 'failure)
+                   ((or (xml-get-children testcase 'failure)
+                        (xml-get-children testcase 'error))
                     (incf failure)
                     (cl-pushnew timestamp (second entry) :test 'equal))
                    ((xml-get-children testcase 'skipped)
