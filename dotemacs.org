@@ -471,22 +471,38 @@ results, sorted by most frequent failures.
         (dolist (file files)
           (let ((root (car (xml-parse-file file)))
                 (timestamp (nth 5 (file-attributes file))))
-            (dolist (testcase (xml-node-children root))
-              (when (eq (car-safe testcase) 'testcase)
-                (let* ((name (xml-get-attribute testcase 'name))
-                       (entry (or (assoc name my-junit-xml-failures)
-                                  (list name () ()))))
-                  (cond
-                   ((or (xml-get-children testcase 'failure)
-                        (xml-get-children testcase 'error))
-                    (incf failure)
-                    (cl-pushnew timestamp (second entry) :test 'equal))
-                   ((xml-get-children testcase 'skipped)
-                    (incf skipped)
-                    (cl-pushnew timestamp (third entry) :test 'equal)))
-                  (when (or (second entry) (third entry))
-                    (cl-pushnew entry my-junit-xml-failures)))))))
-        (message "%d failures, %d skipped" failure skipped))))
+            (cl-labels
+                ((read-junit-xml
+                  (prefix xml-node)
+                  (cl-case (car-safe xml-node)
+                    (testsuites
+                     ;; Just descend
+                     (mapc (apply-partially #'read-junit-xml prefix)
+                           (xml-node-children xml-node)))
+                    (testsuite
+                     (let ((testsuite-name (xml-get-attribute-or-nil xml-node 'name)))
+                       (mapc (apply-partially
+                              #'read-junit-xml
+                              (if testsuite-name
+                                  (concat prefix testsuite-name ":")
+                                prefix))
+                             (xml-node-children xml-node))))
+                    (testcase
+                     (let* ((name (concat prefix (xml-get-attribute xml-node 'name)))
+                            (entry (or (assoc name my-junit-xml-failures)
+                                       (list name () ()))))
+                       (cond
+                        ((or (xml-get-children xml-node 'failure)
+                             (xml-get-children xml-node 'error))
+                         (incf failure)
+                         (cl-pushnew timestamp (second entry) :test 'equal))
+                        ((xml-get-children xml-node 'skipped)
+                         (incf skipped)
+                         (cl-pushnew timestamp (third entry) :test 'equal)))
+                       (when (or (second entry) (third entry))
+                         (cl-pushnew entry my-junit-xml-failures)))))))
+              (mapc (apply-partially #'read-junit-xml nil) (xml-node-children root))))))
+      (message "%d failures, %d skipped" failure skipped)))
 
   (defvar my-junit-xml-latest-display (list 0 0 0)
     "The time when `my-junit-xml-display' was last called.
