@@ -567,8 +567,10 @@ results, sorted by most frequent failures.
     (remove-hook 'compilation-finish-functions 'my-junit-xml-after-compilation))
 
   (defun my-junit-xml-after-compilation (compilation-buffer _status)
-    (my-junit-xml-read-dir my-junit-xml-dir my-junit-xml-wildcard)
-    (my-junit-xml-display))
+    (unless (with-current-buffer compilation-buffer
+              (derived-mode-p 'grep-mode))
+      (my-junit-xml-read-dir my-junit-xml-dir my-junit-xml-wildcard)
+      (my-junit-xml-display)))
 #+END_SRC
 * eval-last-sexp-dwim for C-x C-e
 If there are unbound variables, ask for their values.
