@@ -461,11 +461,14 @@ results, sorted by most frequent failures.
 #+BEGIN_SRC emacs-lisp
   (defvar my-junit-xml-failures ())
 
-  (defun my-junit-xml-read-dir (dir)
-    (interactive "DDirectory: ")
-    (let ((files (directory-files dir t "\\.xml$" t))
-          (skipped 0)
-          (failure 0))
+  (defun my-junit-xml-read-dir (dir wildcard)
+    (interactive (list
+                  (read-directory-name "Directory: " nil nil t)
+                  (read-string "Wildcard (default *.xml): " nil nil "*.xml")))
+    (let* ((default-directory dir)
+           (files (file-expand-wildcards wildcard))
+           (skipped 0)
+           (failure 0))
       (if (null files)
           (user-error "No *.xml files in %s" dir)
         (dolist (file files)
@@ -547,11 +550,16 @@ results, sorted by most frequent failures.
 
   (defvar my-junit-xml-dir nil)
 
-  (defun my-junit-xml-always-display-after-compile (dir)
+  (defvar my-junit-xml-wildcard nil)
+
+  (defun my-junit-xml-always-display-after-compile (dir wildcard)
     "After a compilation finishes, display JUnit info.
   Update from all *.xml files in DIR."
-    (interactive "DDirectory: ")
-    (setq my-junit-xml-dir dir)
+    (interactive (list
+                  (read-directory-name "Directory: " nil nil t)
+                  (read-string "Wildcard (default *.xml): " nil nil "*.xml")))
+    (setq my-junit-xml-dir dir
+          my-junit-xml-wildcard wildcard)
     (add-hook 'compilation-finish-functions 'my-junit-xml-after-compilation))
 
   (defun my-junit-xml-never-display-after-compile ()
@@ -559,7 +567,7 @@ results, sorted by most frequent failures.
     (remove-hook 'compilation-finish-functions 'my-junit-xml-after-compilation))
 
   (defun my-junit-xml-after-compilation (compilation-buffer _status)
-    (my-junit-xml-read-dir my-junit-xml-dir)
+    (my-junit-xml-read-dir my-junit-xml-dir my-junit-xml-wildcard)
     (my-junit-xml-display))
 #+END_SRC
 * eval-last-sexp-dwim for C-x C-e
