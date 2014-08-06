@@ -692,22 +692,37 @@ http://www.emacswiki.org/emacs/MultipleSMTPAccounts .
 #+BEGIN_SRC emacs-lisp
   (defvar my-smtp-servers ()
     "Map e-mail address to SMTP server hostname.
+  This is an alist, where the car of each entry is the email
+  address of the sender, and the cdr is the SMTP server to use for
+  that address.  By default, the port specified in
+  `smtpmail-smtp-service' is used, but that can be overridden for
+  an individual server by specifying it as \"example.com:42\".
+
   To set username, add \"machine example.com login foo\" to ~/.authinfo.")
-  
+
   (with-eval-after-load "smtpmail"
     (defadvice smtpmail-via-smtp (around set-smtp-server-from-header activate)
-      (let ((smtpmail-smtp-server
-             (let ((from-address (save-restriction
-                                   (message-narrow-to-headers)
-                                   (mail-fetch-field "from"))))
-               (or
-                (and from-address
-                     (cdr (assoc (cadr
-                                  (mail-extract-address-components
-                                   from-address))
-                                 my-smtp-servers)))
-                smtpmail-smtp-server))))
-        (message "Using SMTP server %s" smtpmail-smtp-server)
+      (let* ((from-address (save-restriction
+                             (message-narrow-to-headers)
+                             (mail-fetch-field "from")))
+             (server-entry
+              (when from-address
+                (cdr (assoc-string (cadr
+                                    (mail-extract-address-components
+                                     from-address))
+                                   my-smtp-servers
+                                   :ignore-case))))
+             (hostname-port
+              (when server-entry
+                (string-match "^\\([^:]*\\)\\(?::\\([0-9]+\\)\\)?$" server-entry)
+                (cons (match-string 1 server-entry) (match-string 2 server-entry))))
+             (smtpmail-smtp-server
+              (or (and hostname-port (car hostname-port))
+                  smtpmail-smtp-server))
+             (smtpmail-smtp-service
+              (or (and hostname-port (cdr hostname-port) (string-to-number (cdr hostname-port)))
+                  smtpmail-smtp-service)))
+        (message "Using SMTP server %s:%s" smtpmail-smtp-server smtpmail-smtp-service)
         ad-do-it)))
 #+END_SRC
 * Fix org-mode-line-clock
