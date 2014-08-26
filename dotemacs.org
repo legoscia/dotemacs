@@ -854,3 +854,13 @@ deactivating Flymake.
     (advice-add 'flymake-post-syntax-check :around 'my-flymake-cfgerr-is-benign))
 
 #+END_SRC
+* No =nroff-mode= for =*.[1-9]=
+Added on [2014-08-26 Tue 11:33].
+
+I never open nroff files, but often open log files matching this
+pattern.  The nroff-mode font locking slows scrolling down
+considerably, so I prefer fundamental-mode for these.
+
+#+BEGIN_SRC emacs-lisp
+  (setq auto-mode-alist (delete '("\\.[1-9]\\'" . nroff-mode) auto-mode-alist))
+#+END_SRC
