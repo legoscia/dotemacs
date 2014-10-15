@@ -382,7 +382,7 @@ Added on [2010-08-03 Tue 15:08].
            (apply 'append (mapcar 'file-expand-wildcards mh-erlang-flymake-code-path-dirs)))))
   
   (defun mh-simple-get-deps-include-dirs ()
-    (list "../include" "../src"))
+    (list "../include" "../src" ".."))
   
   (setq erlang-flymake-get-code-path-dirs-function 'mh-simple-get-deps-code-path-dirs
         erlang-flymake-get-include-dirs-function 'mh-simple-get-deps-include-dirs)
