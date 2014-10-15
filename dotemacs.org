@@ -6,8 +6,37 @@ Load this file with:
 * Set up org-capture and bind it to F8
 #+BEGIN_SRC emacs-lisp
   (require 'org-capture)
+
+  (defvar my-org-current-file "~/org/notes.org"
+    "The file where new activities are started.")
+
+  (defun my-org-capture-current-file ()
+    (set-buffer (org-capture-target-buffer my-org-current-file))
+    ;; Now we need to move somewhere that's not a headline...
+    (goto-char (point-min))
+    (unless (org-at-heading-p)
+      (outline-next-heading))
+    (when (org-at-heading-p)
+      (insert "\n"))
+    ;; (goto-char (point-max))
+    ;; (or (bolp) (insert "\n"))
+    ;; (insert "* \n")
+    ;; (beginning-of-line 0)
+    ;; (while (and (org-at-heading-p) (not (bobp)))
+    ;;   (forward-line -1))
+    )
+
+  (defun my-org-set-current-file (new-file)
+    (interactive
+     (let ((dir "~/org/"))
+       (list
+        (expand-file-name (read-file-name "New org file for captures: "
+                                          dir nil t nil (lambda (f) (string-match-p "\\.org$" f)))
+                          dir))))
+    (setq my-org-current-file new-file))
+
   (add-to-list 'org-capture-templates '("n" "Note" entry (clock) "* %^{Note title} %T\n%?"))
-  (add-to-list 'org-capture-templates '("4" "New activity" entry (file "~/org/notes.org") "* %^{New activity}\n%?\n%a" :prepend t :clock-in t))
+  (add-to-list 'org-capture-templates '("4" "New activity" entry (function my-org-capture-current-file) "* %^{New activity}\n%?\n%a" :prepend t :clock-in t))
   (add-to-list 'org-capture-templates '("e" "dotemacs" entry (file "~/dotemacs/dotemacs.org") "* %^{dotemacs snippet titled}\nAdded on %U.\n#+BEGIN_SRC emacs-lisp\n  %?\n#+END_SRC" :unnarrowed))
   (add-to-list 'org-capture-templates '("l" "List item from active region" item (clock) "- %i\n" :immediate-finish t))
   (global-set-key [f8] 'org-capture)
