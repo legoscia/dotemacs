@@ -368,13 +368,42 @@ Added on [2012-06-25 Mon 16:11].
     (when (and buffer-file-name (file-name-directory buffer-file-name))
       (unless (file-remote-p buffer-file-name)
         (flymake-mode))))
-  
+
   (eval-after-load "erlang-flymake"
     '(progn
        (remove-hook 'erlang-mode-hook 'flymake-mode)
        (add-hook 'erlang-mode-hook 'maybe-turn-on-flymake)))
-  
+
   (eval-after-load "erlang" '(require 'erlang-flymake))
+#+END_SRC
+** Did you mean underscore?
+Added on [2013-12-04 Wed 17:21].
+#+BEGIN_SRC emacs-lisp
+  (defun erlang-did-you-mean-underscore ()
+    "Insert either a hyphen or an underscore.
+  Why is it so hard to hold down the shift key when I really want
+  an underscore?
+
+  If the word before point consists only of lowercase letters and
+  underscores, then I'm probably writing an atom and want an
+  underscore.  Otherwise, I'm probably writing a variable name, and
+  want a hyphen / minus sign."
+    (interactive)
+    (let ((case-fold-search nil)
+          (parser-state (syntax-ppss)))
+      (if (and
+           ;; This does not apply to comments.
+           (null (nth 4 parser-state))
+           ;; Nor to strings.
+           (null (nth 3 parser-state))
+           (save-match-data (looking-back "\\<[a-z_]+")))
+          (progn
+            (message "Did you mean underscore?")
+            (insert "_"))
+        (insert "-"))))
+
+  (eval-after-load "erlang"
+    '(define-key erlang-mode-map "-" 'erlang-did-you-mean-underscore))
 #+END_SRC
 
 * Org-mode stuff
@@ -411,35 +440,6 @@ Added on [2013-11-11 Mon 16:08].
        (define-key magit-commit-mode-map (kbd "C-c C-w") #'diff-tell-file-name)
        (define-key magit-commit-mode-map (kbd "C-c C-a") #'diff-apply-hunk)
        (define-key magit-commit-mode-map (kbd "C-c C-s") #'diff-split-hunk)))
-#+END_SRC
-* Did you mean underscore? :erlang:
-Added on [2013-12-04 Wed 17:21].
-#+BEGIN_SRC emacs-lisp
-  (defun erlang-did-you-mean-underscore ()
-    "Insert either a hyphen or an underscore.
-  Why is it so hard to hold down the shift key when I really want
-  an underscore?
-
-  If the word before point consists only of lowercase letters and
-  underscores, then I'm probably writing an atom and want an
-  underscore.  Otherwise, I'm probably writing a variable name, and
-  want a hyphen / minus sign."
-    (interactive)
-    (let ((case-fold-search nil)
-          (parser-state (syntax-ppss)))
-      (if (and
-           ;; This does not apply to comments.
-           (null (nth 4 parser-state))
-           ;; Nor to strings.
-           (null (nth 3 parser-state))
-           (save-match-data (looking-back "\\<[a-z_]+")))
-          (progn
-            (message "Did you mean underscore?")
-            (insert "_"))
-        (insert "-"))))
-
-  (eval-after-load "erlang"
-    '(define-key erlang-mode-map "-" 'erlang-did-you-mean-underscore))
 #+END_SRC
 * ANSI colours in compilation buffer
 Added on [2013-12-10 Tue 10:08].
