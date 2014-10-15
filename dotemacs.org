@@ -851,6 +851,16 @@ Added on [2014-05-23 Fri 18:26].
   (with-eval-after-load "erlang"
     (add-hook 'erlang-mode-hook 'archive-escript-zip--maybe-turn-on))
 #+END_SRC
+* Avoid "ControlPath too long" with Tramp on OSX
+Added on [2014-06-19 Thu 14:51].
+
+For some reason, the function =tramp-compat-temporary-file-directory=
+disregards any customization for =temporary-file-directory=, and
+always goes with the _standard_ value.  On OSX, the standard value is
+likely to be fairly long, but =/tmp= is equivalent to it anyway:
+#+BEGIN_SRC emacs-lisp
+  (put 'temporary-file-directory 'standard-value (list "/tmp/"))
+#+END_SRC
 * Avoid CFGERR disabling Flymake				    :flymake:
 Added on [2014-06-30 Mon 12:18].
 
