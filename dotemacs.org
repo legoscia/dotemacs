@@ -145,11 +145,51 @@ Load this file with:
     (org-clock-in (list 4)))
   (global-set-key [f7] 'org-clock-in-menu)
 #+END_SRC
+
+** s-SPC for ace-jump
+See https://github.com/winterTTr/ace-jump-mode/
+
+#+BEGIN_SRC emacs-lisp
+(define-key global-map (kbd "s-SPC") 'ace-jump-mode)
+#+END_SRC
+
+** s-r is rgrep
+#+BEGIN_SRC emacs-lisp
+(define-key global-map (kbd "s-r") 'rgrep)
+#+END_SRC
+** s-m is magit-status
+#+BEGIN_SRC emacs-lisp
+(define-key global-map (kbd "s-m") 'magit-status)
+#+END_SRC
+** C-x C-b is for switching buffers
+Added on [2014-03-07 Fri 16:50].
+
+I keep pressing this when I mean =C-x b=.
+#+BEGIN_SRC emacs-lisp
+  (global-set-key "\C-x\C-b" 'ido-switch-buffer)
+#+END_SRC
+** § is backward-kill-word
+Added on [2014-04-07 Mon 15:11].
+
+I'm not using it for anything else, so...
+#+BEGIN_SRC emacs-lisp
+  (global-set-key "§" 'backward-kill-word)
+#+END_SRC
+** C-h C-c is C-h c
+Added on [2014-07-01 Tue 15:52].
+
+I keep hitting C-h C-c (=describe-copying=) when I mean C-h c
+(=describe-key-briefly=).  Let's rebind:
+#+BEGIN_SRC emacs-lisp
+  (with-eval-after-load "help"
+    (define-key help-map "\C-c" 'describe-key-briefly))
+#+END_SRC
 * multiple-cursors
 Added on [2013-05-29 Wed 12:31].
 #+BEGIN_SRC emacs-lisp
   (global-set-key (kbd "C-S-c C-S-c") 'mc/edit-lines)
   (global-set-key (kbd "C->") 'mc/mark-next-like-this)
+  (global-set-key (kbd "C-s->") 'mc/skip-to-next-like-this)
   (global-set-key (kbd "C-<") 'mc/mark-previous-like-this)
   (global-set-key (kbd "C-c C-<") 'mc/mark-all-like-this)
 #+END_SRC
