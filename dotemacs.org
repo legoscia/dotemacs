@@ -3,6 +3,9 @@ Load this file with:
 : (require 'org-loaddefs)
 : (org-babel-load-file "~/dotemacs/dotemacs.org")
 
+The contents of this file may be modified and/or redistributed
+according to the terms of the [[http://www.wtfpl.net/][WTFPL]].
+
 * Set up org-capture and bind it to F8
 #+BEGIN_SRC emacs-lisp
   (require 'org-capture)
