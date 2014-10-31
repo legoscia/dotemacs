@@ -954,3 +954,23 @@ considerably, so I prefer fundamental-mode for these.
 #+BEGIN_SRC emacs-lisp
   (setq auto-mode-alist (delete '("\\.[1-9]\\'" . nroff-mode) auto-mode-alist))
 #+END_SRC
+* Add Dvorak layout to quail-keyboard-layout-alist
+Added on [2014-10-31 Fri 12:41].
+
+This makes it possible to use input methods that emulate a different
+keyboard layout, such as ЙЦУКЕН.
+#+BEGIN_SRC emacs-lisp
+  (with-eval-after-load "quail"
+    (let ((dvorak-layout
+           (concat "                              "
+                   "  1!2@3#4$5%6^7&8*9(0)[{]}`~  "
+                   "  '\",<.>pPyYfFgGcCrRlL/?=+    "
+                   "  aAoOeEuUiIdDhHtTnNsS-_\\|  "
+                   "    ;:qQjJkKxXbBmMwWvVzZ      "
+                   "                                "))
+          (current-entry (assoc "dvorak" quail-keyboard-layout-alist)))
+      (if current-entry
+          (setf (cdr current-entry) dvorak-layout)
+        (push (cons "dvorak" dvorak-layout) quail-keyboard-layout-alist))))
+  (quail-set-keyboard-layout "dvorak")
+#+END_SRC
