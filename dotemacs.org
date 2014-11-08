@@ -974,3 +974,22 @@ keyboard layout, such as ЙЦУКЕН.
         (push (cons "dvorak" dvorak-layout) quail-keyboard-layout-alist))))
   (quail-set-keyboard-layout "dvorak")
 #+END_SRC
+* Try whatever flymake is doing					    :flymake:
+Added on [2013-01-07 Mon 17:48].
+
+If flymake gives confusing results, try this function, to run the
+exact same command that flymake uses in a compilation buffer.
+
+#+BEGIN_SRC emacs-lisp
+  ;; see `flymake-start-syntax-check'
+  (defun my-flymake-compile-manually ()
+    (interactive)
+    (let* ((init-f (flymake-get-init-function buffer-file-name))
+           (cmd-and-args (funcall init-f))
+           (cmd (nth 0 cmd-and-args))
+           (args (nth 1 cmd-and-args))
+           (dir (nth 2 cmd-and-args)))
+      (let ((default-directory (or dir default-directory)))
+        (compile
+         (apply 'concat cmd " " (mapcar (lambda (arg) (concat (shell-quote-argument arg) " ")) args))))))
+#+END_SRC
