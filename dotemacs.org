@@ -819,6 +819,12 @@ the "mode line active" face even in inactive buffers.
 #+END_SRC
 * Update mode line face on focus
 Added on [2014-02-21 Fri 16:45].
+
+By default, the mode line of the current buffer has a light grey
+background and the mode lines of other buffers have a dark grey
+background.  With this little hack, the mode line of the current
+buffer will be equally dark grey when Emacs is not the current
+application.
 #+BEGIN_SRC emacs-lisp
   (defvar my-mode-line-active-background "gray75")
   (defvar my-mode-line-inactive-background "gray40")
