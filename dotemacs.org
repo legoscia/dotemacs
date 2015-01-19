@@ -860,6 +860,44 @@ application.
       (message "Previous buffer text saved to kill ring")))
   (add-hook 'before-revert-hook 'maybe-save-before-reverting)
 #+END_SRC
+* If playing a URL, stop instead of pausing			       :emms:
+Added on [2013-07-30 Tue 11:46].
+#+BEGIN_SRC emacs-lisp
+  (defun my-emms-pause-or-stop ()
+    (interactive)
+    (if emms-player-playing-p
+        (if (eq (cdr (assq 'type (emms-playlist-current-selected-track))) 'url)
+            (emms-stop)
+          (emms-pause))
+      (emms-start)))
+
+  (global-set-key [f12] 'my-emms-pause-or-stop)
+#+END_SRC
+* Pause music when Emacs is unfocussed				       :emms:
+Added on [2014-04-07 Mon 01:44].
+#+BEGIN_SRC emacs-lisp
+  (defvar my-emms-pause-on-unfocus t)
+  (defvar my-emms-was-playing nil)
+
+  (defun my-emms-focus-out-pause ()
+    (when my-emms-pause-on-unfocus
+      (setq my-emms-was-playing
+            (and (bound-and-true-p emms-player-playing-p)
+                 (not emms-player-paused-p)))
+      (when my-emms-was-playing
+        (my-emms-pause-or-stop))))
+
+  (add-hook 'focus-out-hook 'my-emms-focus-out-pause)
+
+  (defun my-emms-focus-in-play ()
+    (when my-emms-pause-on-unfocus
+      (when my-emms-was-playing
+        ;; Make sure nothing is actually playing... That should never happen.
+        (unless (and emms-player-playing-p (not emms-player-paused-p))
+          (emms-pause)))))
+
+  (add-hook 'focus-in-hook 'my-emms-focus-in-play)
+#+END_SRC
 * escript zip support for archive-mode				     :erlang:
 Added on [2014-05-23 Fri 18:26].
 #+BEGIN_SRC emacs-lisp
