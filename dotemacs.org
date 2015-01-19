@@ -778,7 +778,11 @@ http://www.emacswiki.org/emacs/MultipleSMTPAccounts .
   `smtpmail-smtp-service' is used, but that can be overridden for
   an individual server by specifying it as \"example.com:42\".
 
-  To set username, add \"machine example.com login foo\" to ~/.authinfo.")
+  To set username, add \"machine example.com login foo\" to ~/.authinfo.
+
+  To force a certain username when looking up the password, specify
+  the server as \"username@example.com@mail.example.com:42\".  The
+  last @ sign separates the username and the hostname.")
 
   (with-eval-after-load "smtpmail"
     (defadvice smtpmail-via-smtp (around set-smtp-server-from-header activate)
@@ -792,9 +796,14 @@ http://www.emacswiki.org/emacs/MultipleSMTPAccounts .
                                      from-address))
                                    my-smtp-servers
                                    :ignore-case))))
+             (smtpmail-smtp-user
+              (when (and server-entry
+                         ;; greedy match: stop at last @ sign
+                         (string-match "^\\(.*\\)@" server-entry))
+                (match-string 1 server-entry)))
              (hostname-port
               (when server-entry
-                (string-match "^\\([^:]*\\)\\(?::\\([0-9]+\\)\\)?$" server-entry)
+                (string-match "\\([^@:]*\\)\\(?::\\([0-9]+\\)\\)?$" server-entry)
                 (cons (match-string 1 server-entry) (match-string 2 server-entry))))
              (smtpmail-smtp-server
               (or (and hostname-port (car hostname-port))
@@ -802,7 +811,8 @@ http://www.emacswiki.org/emacs/MultipleSMTPAccounts .
              (smtpmail-smtp-service
               (or (and hostname-port (cdr hostname-port) (string-to-number (cdr hostname-port)))
                   smtpmail-smtp-service)))
-        (message "Using SMTP server %s:%s" smtpmail-smtp-server smtpmail-smtp-service)
+        (message "Using SMTP server %s:%s%s" smtpmail-smtp-server smtpmail-smtp-service
+                 (when smtpmail-smtp-user (concat ", username " smtpmail-smtp-user)))
         ad-do-it)))
 #+END_SRC
 * Fix org-mode-line-clock
