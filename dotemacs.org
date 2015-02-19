@@ -456,6 +456,11 @@ Added on [2013-12-04 Wed 17:21].
   (eval-after-load "erlang"
     '(define-key erlang-mode-map "-" 'erlang-did-you-mean-underscore))
 #+END_SRC
+** sys.config and rebar.config are Erlang
+Added on [2015-02-17 Tue 13:05].
+#+BEGIN_SRC emacs-lisp
+  (add-to-list 'auto-mode-alist '("/\\(?:sys\\|rebar\\).config\\'" . erlang-mode))
+#+END_SRC
 
 * Org-mode stuff
 ** Wrap in example tags
