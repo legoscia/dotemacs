@@ -1058,3 +1058,20 @@ Added on [2014-11-20 Thu 11:33].
   (global-set-key (kbd "M-[") 'insert-pair)
   (global-set-key (kbd "M-{") 'insert-pair)
 #+END_SRC
+* list-all-buffers
+Added on [2015-04-13 Mon 17:48].
+
+List all buffers, including invisible ones (whose names start with a
+space).
+
+From [[http://stackoverflow.com/a/3883375/113848][this answer]] by [[http://stackoverflow.com/users/6148/trey-jackson][Trey Jackson]].
+#+BEGIN_SRC emacs-lisp
+  (defun list-all-buffers (&optional files-only)
+    "Display a list of names of existing buffers.
+  The list is displayed in a buffer named `*Buffer List*'.
+  Non-null optional arg FILES-ONLY means mention only file buffers.
+
+  For more information, see the function `buffer-menu'."
+    (interactive "P")
+    (display-buffer (list-buffers-noselect files-only (buffer-list))))
+#+END_SRC
