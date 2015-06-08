@@ -1058,6 +1058,22 @@ Added on [2014-11-20 Thu 11:33].
   (global-set-key (kbd "M-[") 'insert-pair)
   (global-set-key (kbd "M-{") 'insert-pair)
 #+END_SRC
+* Fix the display of Emoji
+Added on [2015-02-11 Wed 18:46].
+
+Stolen [[https://github.com/wasamasa/dotemacs/blob/master/init.org#fix-the-display-of-emoji][from wasamasa]].
+
+For some reason, Emacs fails to find a fallback font for characters
+not supported by the default font, such as =🐈= (CAT).  Annoyingly, it
+freezes for around a second when displaying a buffer containing such a
+character (at least on OSX).  Let's define a specific font for that
+character range.
+#+BEGIN_SRC emacs-lisp
+  (defun my-fix-emojis (&optional frame)
+    (set-fontset-font "fontset-default" '(#x10000 . #x1ffff) "Symbola" frame))
+  (my-fix-emojis)
+  (add-hook 'after-make-frame-functions 'my-fix-emojis)
+#+END_SRC
 * list-all-buffers
 Added on [2015-04-13 Mon 17:48].
 
