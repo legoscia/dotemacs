@@ -817,7 +817,7 @@ http://www.emacswiki.org/emacs/MultipleSMTPAccounts .
               (or (and hostname-port (cdr hostname-port) (string-to-number (cdr hostname-port)))
                   smtpmail-smtp-service)))
         (message "Using SMTP server %s:%s%s" smtpmail-smtp-server smtpmail-smtp-service
-                 (when smtpmail-smtp-user (concat ", username " smtpmail-smtp-user)))
+                 (if smtpmail-smtp-user (concat ", username " smtpmail-smtp-user) ""))
         ad-do-it)))
 #+END_SRC
 * Fix org-mode-line-clock
