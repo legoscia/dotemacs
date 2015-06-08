@@ -1074,6 +1074,78 @@ character range.
   (my-fix-emojis)
   (add-hook 'after-make-frame-functions 'my-fix-emojis)
 #+END_SRC
+* Automate MobileOrg push/pull
+** Push MobileOrg files asynchronously
+Added on [2015-03-02 Mon 09:34].
+
+This is somewhat annoying: after 60 seconds of idle time after saving
+an org-mode file, it blocks the entire Emacs session with agenda
+creation, copying etc.  I find it's better than the alternative, which
+is remembering to push manually.
+#+BEGIN_SRC emacs-lisp
+  (defun my-org-mobile-push-async ()
+    (interactive)
+    (async-start
+     `(lambda ()
+        (require 'org-mobile)
+        ,(async-inject-variables "org-\\(agenda-files\\|agenda-custom-commands\\|mobile\\)")
+        ,(async-inject-variables "\\`version-control\\'")
+        ;; Need to avoid prompting to delete old backups:
+        (setq delete-old-versions 'never)
+        ;; XXX: need to avoid queries about "stealing" unsaved org files
+        ;; XXX: is this the right way to do it?
+        (setq org-mobile-force-id-on-agenda-items nil)
+        (org-mobile-push)
+        ;; XXX: necessary?
+        ;; (save-some-buffers t)
+        )
+     (lambda (result)
+       (unless (equal result "Files for mobile viewer staged")
+         (warn "push result: %S" result)))))
+
+  ;; Let's do better than this:
+  ;; (with-eval-after-load "org"
+  ;;   (add-hook 'org-mode-hook
+  ;;             (lambda ()
+  ;;               (add-hook 'after-save-hook 'my-org-mobile-push-async nil t))))
+
+  (defvar my-org-mobile-push-timer nil)
+
+  (defun my-org-mobile-push-later ()
+    (interactive)
+    (unless my-org-mobile-push-timer
+      (setq my-org-mobile-push-timer
+            (run-with-idle-timer
+             60 nil
+             (lambda ()
+               (setq my-org-mobile-push-timer nil)
+               (let ((my-org-mobile-push-timer t))
+                 (org-mobile-push)))))))
+
+  (with-eval-after-load "org"
+    (add-hook 'org-mode-hook
+              (lambda ()
+                (add-hook 'after-save-hook 'my-org-mobile-push-later nil t))))
+
+#+END_SRC
+** Automatically pull from MobileOrg
+Added on [2015-03-02 Mon 12:02].
+#+BEGIN_SRC emacs-lisp
+  (defun my-org-mobile-maybe-pull ()
+    (interactive)
+    (require 'org-mobile)
+    (let* ((capture-file (expand-file-name org-mobile-capture-file org-mobile-directory))
+           (attributes (file-attributes capture-file)))
+      (if (null attributes)
+          (warn "MobileOrg capture file `%s' not found" capture-file)
+        (when (> (nth 7 attributes) 1)
+          (org-mobile-pull)))))
+
+  ;; Check every five minutes.
+  (run-with-timer 300 300 'my-org-mobile-maybe-pull)
+
+#+END_SRC
+
 * Hacks for jabber.el + Hipchat				     :jabber:hipchat:
 ** Mention someone in a Hipchat chat room
 Added on [2015-03-10 Tue 18:11].
