@@ -1052,3 +1052,9 @@ exact same command that flymake uses in a compilation buffer.
         (compile
          (apply 'concat cmd " " (mapcar (lambda (arg) (concat (shell-quote-argument arg) " ")) args))))))
 #+END_SRC
+* =insert-pair= bindings for square brackets and curly braces
+Added on [2014-11-20 Thu 11:33].
+#+BEGIN_SRC emacs-lisp
+  (global-set-key (kbd "M-[") 'insert-pair)
+  (global-set-key (kbd "M-{") 'insert-pair)
+#+END_SRC
