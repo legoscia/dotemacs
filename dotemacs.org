@@ -1074,6 +1074,66 @@ character range.
   (my-fix-emojis)
   (add-hook 'after-make-frame-functions 'my-fix-emojis)
 #+END_SRC
+* Hacks for jabber.el + Hipchat				     :jabber:hipchat:
+** Mention someone in a Hipchat chat room
+Added on [2015-03-10 Tue 18:11].
+
+Hipchat uses a non-standard mechanism for mentions in chat rooms: look
+for a special =mention_name= attribute in the roster entry.  Good
+thing that we save the entire roster XML "just in case".
+
+Hit =C-c C-m= in a groupchat buffer and select "Hipchat mention" from
+the menu.  Type the name of the person you want to mention, and their
+"mention name" will be inserted into the buffer.
+
+Further work: replace the TAB binding for group chat buffers when the
+server is a Hipchat server.
+
+#+BEGIN_SRC emacs-lisp
+  (defun my-jabber-hipchat-mention (jid)
+    (interactive
+     (list
+      (jabber-read-jid-completing
+       "User: " (plist-get (fsm-get-state-data jabber-buffer-connection) :roster)
+       t)))
+    (let* ((roster-xml (get (jabber-jid-symbol jid) 'xml))
+           (mention-name (jabber-xml-get-attribute roster-xml 'mention_name)))
+      (insert "@" mention-name " ")))
+
+  (with-eval-after-load "jabber-muc"
+    (add-to-list 'jabber-jid-muc-menu
+                 (cons "Hipchat mention" 'my-jabber-hipchat-mention)))
+#+END_SRC
+** Autojoin Hipchat rooms
+Hipchat lists chat rooms using [[https://xmpp.org/extensions/xep-0048.html][XEP-0048]], but the "autojoin" field is
+off, and you can't turn it on.  Thus, here is a piece of magic that
+treats the autojoin field as if it were on, and autojoins all your
+Hipchat chat rooms after you connect.
+#+begin_src emacs-lisp
+  (defun my-join-hipchat-rooms (c)
+    (interactive
+     (list
+      (or (jabber-find-connection "15025_1111946@chat.hipchat.com")
+          (error "Hipchat connection not found"))))
+    (when (string= (jabber-connection-bare-jid c) "15025_1111946@chat.hipchat.com")
+      (jabber-get-bookmarks
+       c
+       (lambda (jc bookmarks)
+         (dolist (bookmark bookmarks)
+           ;; same as jabber-muc-autojoin, but don't check autojoin,
+           ;; because Hipchat inexplicably doesn't set that.
+           (setq bookmark (jabber-parse-conference-bookmark bookmark))
+           (when bookmark
+             (put (jabber-jid-symbol (plist-get bookmark :jid)) 'name
+                  (plist-get bookmark :name))
+             (jabber-muc-join jc (plist-get bookmark :jid)
+                                    (or (plist-get bookmark :nick)
+                                        (plist-get (fsm-get-state-data jc) :username)))))))
+      t))
+
+  (with-eval-after-load "jabber-core"
+    (add-hook 'jabber-post-connect-hooks 'my-join-hipchat-rooms))
+#+end_src
 * list-all-buffers
 Added on [2015-04-13 Mon 17:48].
 
