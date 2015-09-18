@@ -127,12 +127,15 @@ according to the terms of the [[http://www.wtfpl.net/][WTFPL]].
 #+BEGIN_SRC emacs-lisp
   (global-set-key [Scroll_Lock] 'emms-pause)
   (global-set-key (kbd "<S-Scroll_Lock>") 'emms-next)
+  (global-set-key (kbd "<M-Scroll_Lock>") 'emms-previous)
   (global-set-key (kbd "<C-Scroll_Lock>") 'emms-show)
-  
+
   ;; Also use F12, for when scroll lock is not available
   (global-set-key [f12] 'emms-pause)
   (global-set-key (kbd "<S-f12>") 'emms-next)
+  (global-set-key (kbd "<M-f12>") 'emms-previous)
   (global-set-key (kbd "<C-f12>") 'emms-show)
+
 #+END_SRC
 ** F9 for org-clock-goto
 #+begin_src emacs-lisp
