@@ -1311,3 +1311,8 @@ From [[http://stackoverflow.com/a/3883375/113848][this answer]] by [[http://stac
     (interactive "P")
     (display-buffer (list-buffers-noselect files-only (buffer-list))))
 #+END_SRC
+* F5 is jabber-activity-switch-to
+Added on [2015-09-09 Wed 10:33].
+#+BEGIN_SRC emacs-lisp
+  (global-set-key [f5] 'jabber-activity-switch-to)
+#+END_SRC
