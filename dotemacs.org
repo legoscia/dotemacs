@@ -357,17 +357,18 @@ See http://debbugs.gnu.org/cgi/bugreport.cgi?bug=11777 .
   
 #+END_SRC
 
-** Ignore .eunit and .qc in rgrep
+** Ignore .eunit, .qc and _rel in rgrep
 Added on [2012-05-30 Wed 16:28].
 
-These directories are created by rebar, and contain complete copies of
-the source code in =src/=.  No point in searching through those
-directories.
+These directories are created by rebar and/or relx, and contain
+complete copies of the source code in =src/=.  No point in searching
+through those directories.
 #+BEGIN_SRC emacs-lisp
   (eval-after-load "grep"
     '(progn
        (add-to-list 'grep-find-ignored-directories ".eunit")
-       (add-to-list 'grep-find-ignored-directories ".qc")))
+       (add-to-list 'grep-find-ignored-directories ".qc")
+       (add-to-list 'grep-find-ignored-directories "_rel")))
 #+END_SRC
 ** rgrep alias for *.[eh]rl
 Added on [2010-08-03 Tue 15:08].
