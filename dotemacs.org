@@ -1062,6 +1062,18 @@ Added on [2014-11-20 Thu 11:33].
   (global-set-key (kbd "M-[") 'insert-pair)
   (global-set-key (kbd "M-{") 'insert-pair)
 #+END_SRC
+* Kill windows with S-s-up/down
+Added on [2015-01-14 Wed 17:23].
+#+BEGIN_SRC emacs-lisp
+  (defun my-delete-next-window ()
+    (interactive)
+    (delete-window (next-window)))
+  (global-set-key [S-s-down] 'my-delete-next-window)
+  (defun my-delete-previous-window ()
+    (interactive)
+    (delete-window (previous-window)))
+  (global-set-key [S-s-up] 'my-delete-previous-window)
+#+END_SRC
 * Fix the display of Emoji
 Added on [2015-02-11 Wed 18:46].
 
