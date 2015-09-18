@@ -1316,3 +1316,18 @@ Added on [2015-09-09 Wed 10:33].
 #+BEGIN_SRC emacs-lisp
   (global-set-key [f5] 'jabber-activity-switch-to)
 #+END_SRC
+* Display EMMS status in mode line				       :emms:
+Added on [2015-09-11 Fri 17:06].
+
+Use fancy Unicode symbols to indicate if EMMS is playing, paused or
+stopped.
+#+BEGIN_SRC emacs-lisp
+  ;; Using lists of the form (SYMBOL THEN ELSE).
+  ;; If SYMBOL's value is non-nil, use THEN, otherwise ELSE.
+  (defvar my-emms-mode-line-string
+    '(emms-player-playing-p (emms-player-paused-p "⏸" "⏵") "⏹"))
+
+  (add-to-list
+   'global-mode-string
+   '(t my-emms-mode-line-string))
+#+END_SRC
