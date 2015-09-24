@@ -451,7 +451,7 @@ Added on [2013-12-04 Wed 17:21].
            (null (nth 4 parser-state))
            ;; Nor to strings.
            (null (nth 3 parser-state))
-           (save-match-data (looking-back "\\<[a-z_]+")))
+           (save-match-data (looking-back "\\<[a-z_]+" (line-beginning-position))))
           (progn
             (message "Did you mean underscore?")
             (insert "_"))
