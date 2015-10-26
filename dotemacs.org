@@ -6,6 +6,27 @@ Load this file with:
 The contents of this file may be modified and/or redistributed
 according to the terms of the [[http://www.wtfpl.net/][WTFPL]].
 
+
+* Compatibility
+** =with-eval-after-load=
+=with-eval-after-load= was introduced in Emacs 24.4.
+#+BEGIN_SRC emacs-lisp
+  (unless (fboundp 'with-eval-after-load)
+    (defmacro with-eval-after-load (file &rest body)
+      "Execute BODY after FILE is loaded.
+  FILE is normally a feature name, but it can also be a file name,
+  in case that file does not provide any feature."
+      (declare (indent 1) (debug t))
+      `(eval-after-load ,file '(progn ,@body))))
+  
+#+END_SRC
+** =advice-add=
+=advice-add= was added in Emacs 24.4.  Not much to do about this...
+
+#+BEGIN_SRC emacs-lisp
+  (unless (require 'nadvice nil t)
+    (defalias 'advice-add 'ignore))
+#+END_SRC
 * Set up org-capture and bind it to F8
 #+BEGIN_SRC emacs-lisp
   (require 'org-capture)
