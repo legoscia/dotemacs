@@ -1159,10 +1159,11 @@ is remembering to push manually.
                (let ((my-org-mobile-push-timer t))
                  (org-mobile-push)))))))
 
-  (with-eval-after-load "org"
-    (add-hook 'org-mode-hook
-              (lambda ()
-                (add-hook 'after-save-hook 'my-org-mobile-push-later nil t))))
+  (when (file-exists-p "~/Dropbox/mobileorg/mobileorg.org")
+    (with-eval-after-load "org"
+      (add-hook 'org-mode-hook
+                (lambda ()
+                  (add-hook 'after-save-hook 'my-org-mobile-push-later nil t)))))
 
 #+END_SRC
 ** Automatically pull from MobileOrg
@@ -1178,8 +1179,9 @@ Added on [2015-03-02 Mon 12:02].
         (when (> (nth 7 attributes) 1)
           (org-mobile-pull)))))
 
-  ;; Check every five minutes.
-  (run-with-timer 300 300 'my-org-mobile-maybe-pull)
+  ;; Check every five minutes (assuming we're on the right box)
+  (when (file-exists-p "~/Dropbox/mobileorg/mobileorg.org")
+    (run-with-timer 300 300 'my-org-mobile-maybe-pull))
 
 #+END_SRC
 
