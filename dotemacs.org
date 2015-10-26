@@ -1348,7 +1348,9 @@ stopped.
   (defvar my-emms-mode-line-string
     '(emms-player-playing-p (emms-player-paused-p "⏸" "⏵") "⏹"))
 
+  ;; Display if EMMS is loaded, in which case emms-player-list
+  ;; should be set.
   (add-to-list
    'global-mode-string
-   '(t my-emms-mode-line-string))
+   '(emms-player-list my-emms-mode-line-string))
 #+END_SRC
