@@ -103,6 +103,14 @@ according to the terms of the [[http://www.wtfpl.net/][WTFPL]].
   (global-set-key [(control super down)] 'other-window)
   (global-set-key [(control super up)] 'other-window-backwards)
 #+END_SRC
+
+Also =M-s-up= and =M-s-down=, as it seems Ubuntu's window manager eats
+=C-s-up= and =C-s-down=:
+
+#+BEGIN_SRC emacs-lisp
+  (global-set-key [(meta super down)] 'other-window)
+  (global-set-key [(meta super up)] 'other-window-backwards)
+#+END_SRC
 ** Scroll line by line with s-up and s-down
 #+BEGIN_SRC emacs-lisp
   (defun scroll-down-one-line ()
