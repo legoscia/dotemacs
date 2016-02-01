@@ -799,7 +799,7 @@ type =erlang=:
 #+BEGIN_SRC emacs-lisp
   (eval-after-load "proced"
     '(add-to-list 'proced-format-alist
-                  '(erlang user pid tree pcpu pmem start time (args comm) node)))
+                  '(erlang user pid tree pcpu pmem start time node (args comm))))
 #+END_SRC
 * Set SMTP server depending on From address
 Added on [2014-02-21 Fri 14:45].
