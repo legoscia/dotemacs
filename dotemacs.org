@@ -1390,3 +1390,12 @@ stopped.
    'global-mode-string
    '(emms-player-list my-emms-mode-line-string))
 #+END_SRC
+* =.md= files use gfm-mode
+Added on [2015-10-11 Sun 23:55].
+
+Files with extension =.md= are usually using Github-Flavoured
+Markdown.  Let's treat them as such.
+#+BEGIN_SRC emacs-lisp
+  (with-eval-after-load "markdown-mode"
+    (setf (cdr (assoc "\\.md\\'" auto-mode-alist)) 'gfm-mode))
+#+END_SRC
