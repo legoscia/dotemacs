@@ -465,6 +465,74 @@ Added on [2012-05-25 Fri 12:13].
         flymake-log-level 0
         )
 #+END_SRC
+** color-identifiers-mode plus Erlang
+Added on [2014-10-15 Wed 16:07].
+
+See https://github.com/ankurdave/color-identifiers-mode.
+
+#+BEGIN_SRC emacs-lisp
+  (with-eval-after-load "color-identifiers-mode"
+    (add-to-list 'color-identifiers:modes-alist
+                 '(erlang-mode
+                   ""
+                   "\\_<\\([[:upper:]][[:lower:][:upper:][:digit:]_]*\\)"
+                   (nil font-lock-variable-name-face))))
+
+  (with-eval-after-load "erlang"
+    (add-hook 'erlang-mode-hook 'color-identifiers-mode))
+#+END_SRC
+*** Don't interrupt on color-identifiers-mode regexp overflow
+Added on [2015-06-12 Fri 13:14].
+
+When opening some Erlang files, I get this stacktrace:
+
+#+BEGIN_EXAMPLE
+  Debugger entered--Lisp error: (error "Stack overflow in regexp matcher")
+    re-search-forward("\\('\\(?:[^\\']\\|\\(?:\\\\.\\)\\)*'\\|\\_<[[:lower:]]\\(?:\\sw\\|\\s_\\)*\\_>\\)\\s-*(" 49982 t)
+    font-lock-fontify-keywords-region(1 49982 nil)
+    font-lock-default-fontify-region(1 49982 nil)
+    font-lock-fontify-region(1 49982 nil)
+    font-lock-default-fontify-buffer()
+    font-lock-fontify-buffer()
+    color-identifiers:refresh()
+    color-identifiers-mode()
+    run-hooks(erlang-mode-hook)
+    erlang-mode()
+    set-auto-mode-0(erlang-mode nil)
+    set-auto-mode()
+    normal-mode(t)
+    after-find-file(nil t)
+    find-file-noselect-1(#<buffer foo.erl> "~/foo.erl" nil nil "~/foo.erl" (35172384 16777220))
+    find-file-noselect("/Users/magnus/foo.erl" nil nil nil)
+    find-file("/Users/magnus/foo.erl")
+    dired-find-file()
+    funcall-interactively(dired-find-file)
+    call-interactively(dired-find-file nil nil)
+    command-execute(dired-find-file)
+#+END_EXAMPLE
+
+The file is opened in a buffer, but the buffer is hidden and I have to
+switch to it manually.  This is annoying, so I'd rather ignore that
+error and keep going without identifier colouring.
+
+#+BEGIN_SRC emacs-lisp
+  (defun my-color-identifiers-catch-error (oldfun &rest r)
+    (condition-case e
+        (apply oldfun r)
+      (error
+       (cond
+        ((string= (cadr e) "Stack overflow in regexp matcher")
+         ;; Ignore this
+         t)
+        (t
+         ;; Something else...
+         (message "got error %S in color-identifiers-mode; resignalling" e)
+         (signal (car e) (cdr e)))))))
+
+  (with-eval-after-load "color-identifiers-mode"
+    (advice-add 'color-identifiers-mode :around 'my-color-identifiers-catch-error))
+#+END_SRC
+
 ** Be careful about flymake					    :flymake:
 Added on [2012-06-25 Mon 16:11].
 #+BEGIN_SRC emacs-lisp
