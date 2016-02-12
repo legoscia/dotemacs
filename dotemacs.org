@@ -210,6 +210,14 @@ I'm not using it for anything else, so...
 #+BEGIN_SRC emacs-lisp
   (global-set-key "§" 'backward-kill-word)
 #+END_SRC
+
+Also, not using =±= for anything, which is on the same key but
+shifted.  This is bound to be more useful:
+
+#+BEGIN_SRC emacs-lisp
+  (global-set-key "±" "🐈")
+#+END_SRC
+
 ** C-h C-c is C-h c
 Added on [2014-07-01 Tue 15:52].
 
