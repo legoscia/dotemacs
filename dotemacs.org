@@ -1342,6 +1342,18 @@ From [[http://stackoverflow.com/a/3883375/113848][this answer]] by [[http://stac
     (interactive "P")
     (display-buffer (list-buffers-noselect files-only (buffer-list))))
 #+END_SRC
+* s-w to copy path of current file
+Added on [2015-06-02 Tue 14:53].
+#+BEGIN_SRC emacs-lisp
+  (defun my-copy-file-name ()
+    (interactive)
+    (if buffer-file-name
+        (progn
+          (kill-new buffer-file-name)
+          (message "Copied file name to kill ring"))
+      (user-error "Current buffer not associated with a file")))
+  (global-set-key (kbd "s-w") 'my-copy-file-name)
+#+END_SRC
 * F5 is jabber-activity-switch-to
 Added on [2015-09-09 Wed 10:33].
 #+BEGIN_SRC emacs-lisp
