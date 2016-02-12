@@ -236,6 +236,18 @@ Added on [2013-05-29 Wed 12:31].
   (global-set-key (kbd "C-<") 'mc/mark-previous-like-this)
   (global-set-key (kbd "C-c C-<") 'mc/mark-all-like-this)
 #+END_SRC
+** In multiple-cursors-mode, Super-0 inserts numbers
+Added on [2015-06-08 Mon 16:31].
+
+Use a numeric prefix to specify the number to insert at the first
+cursor (defaults to zero), and it gets incremented by one for each
+cursor.
+
+#+BEGIN_SRC emacs-lisp
+  (with-eval-after-load "multiple-cursors-core"
+    (define-key mc/keymap (kbd "s-0") 'mc/insert-numbers))
+#+END_SRC
+
 * Toggle full screen
 Added on [2013-09-11 Wed 17:59].
 
