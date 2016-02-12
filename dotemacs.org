@@ -1281,8 +1281,9 @@ Added on [2015-03-02 Mon 12:02].
 
 #+END_SRC
 
-* Hacks for jabber.el + Hipchat				     :jabber:hipchat:
-** Mention someone in a Hipchat chat room
+* jabber.el hacks for specific servers				     :jabber:
+** Hacks for jabber.el + Hipchat				    :hipchat:
+*** Mention someone in a Hipchat chat room
 Added on [2015-03-10 Tue 18:11].
 
 Hipchat uses a non-standard mechanism for mentions in chat rooms: look
@@ -1311,7 +1312,7 @@ server is a Hipchat server.
     (add-to-list 'jabber-jid-muc-menu
                  (cons "Hipchat mention" 'my-jabber-hipchat-mention)))
 #+END_SRC
-** Autojoin Hipchat rooms
+*** Autojoin Hipchat rooms
 Hipchat lists chat rooms using [[https://xmpp.org/extensions/xep-0048.html][XEP-0048]], but the "autojoin" field is
 off, and you can't turn it on.  Thus, here is a piece of magic that
 treats the autojoin field as if it were on, and autojoins all your
@@ -1322,7 +1323,7 @@ Hipchat chat rooms after you connect.
      (list
       (or (jabber-find-connection "15025_1111946@chat.hipchat.com")
           (error "Hipchat connection not found"))))
-    (when (string= (jabber-connection-bare-jid c) "15025_1111946@chat.hipchat.com")
+    (when (string= (jabber-jid-server (jabber-connection-jid c)) "chat.hipchat.com")
       (jabber-get-bookmarks
        c
        (lambda (jc bookmarks)
@@ -1341,6 +1342,74 @@ Hipchat chat rooms after you connect.
   (with-eval-after-load "jabber-core"
     (add-hook 'jabber-post-connect-hooks 'my-join-hipchat-rooms))
 #+end_src
+** Hacks for jabber.el + Slack					      :slack:
+*** Join a Slack room
+Also posted [[http://emacs.stackexchange.com/a/13912/11][on Emacs Stack Exchange]].
+#+BEGIN_SRC emacs-lisp
+  (defun jabber-join-slack-room (jc group nickname &optional popup)
+    (interactive
+     (let ((account (jabber-read-account))
+           (group (jabber-read-jid-completing "group: ")))
+       (list account group (jabber-muc-read-my-nickname account group) t)))
+    ;; The Slack server does not return a proper disco result:
+    ;;
+    ;; 1. The disco response has no 'from' attribute.  It should be
+    ;; copied from the 'to' attribute of the request, so that the client
+    ;; can correlate the request and the response.
+    ;;
+    ;; 2. The response doesn't contain an identity of "conference",
+    ;; which jabber.el looks for to confirm that this is in fact a
+    ;; conference room.  (It would be confusing to try to "join" one of
+    ;; your contacts.)
+    ;;
+    ;; 3. The disco response doesn't contain the feature
+    ;; "muc_passwordprotected", so jabber.el doesn't know that it needs
+    ;; to provide a password.
+    ;;
+    ;; Therefore, let's seed the correct information into the disco
+    ;; cache before joining the room.
+    (jabber-disco-got-info
+     jc `(iq ((type . "result")
+               (from . ,group)
+               (id . "emacs-iq-21272.27175.175195")
+               (xmlns . "jabber:client")
+               (to . ,(jabber-connection-jid jc)))
+              (query ((xmlns . "http://jabber.org/protocol/disco#info"))
+                     (identity ((category . "conference") (type . "text")))
+                     (feature ((var . "http://jabber.org/protocol/muc")))
+                     ;; XXX: is this necessary?
+                     ;; (feature ((var . "muc_passwordprotected")))
+                     ))
+     (list nil))
+    (jabber-muc-join jc group nickname popup))
+#+END_SRC
+*** Automatically join Slack rooms on login
+In response to a disco items request, the Slack conference server
+returns only the rooms that you have explicitly "joined" from the web
+interface.  Let's use that to our advantage, since Slack doesn't
+present the interesting rooms as bookmarks.
+#+BEGIN_SRC emacs-lisp
+  (defun jabber-slack-join-all-rooms (jc)
+    (interactive (list (jabber-read-account)))
+    (let* ((server (jabber-jid-server (jabber-connection-jid jc)))
+           (conference-server (concat "conference." server)))
+      ;; Only do this when connecting to Slack.
+      (when (string-suffix-p ".xmpp.slack.com" server)
+        (jabber-disco-get-items
+         jc conference-server nil
+         (lambda (jc _ result)
+           (if (eq (car result) 'error)
+               (warn "Error when requesting Slack rooms: %S" result)
+             (dolist (item result)
+               (let ((jid (elt item 1))
+                     (nickname (jabber-jid-username (jabber-connection-jid jc))))
+                 ;; TODO: password
+                 (jabber-join-slack-room jc jid nickname)))))
+         nil))))
+
+  (with-eval-after-load "jabber-core"
+    (add-hook 'jabber-post-connect-hooks 'jabber-slack-join-all-rooms))
+#+END_SRC
 * Relax
 Added on [2015-03-11 Wed 15:38].
 #+BEGIN_SRC emacs-lisp
