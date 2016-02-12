@@ -1354,6 +1354,20 @@ Added on [2015-06-02 Tue 14:53].
       (user-error "Current buffer not associated with a file")))
   (global-set-key (kbd "s-w") 'my-copy-file-name)
 #+END_SRC
+* Minor mode lighters
+Added on [2015-08-21 Fri 12:47].
+#+BEGIN_SRC emacs-lisp
+  (dolist (x '(
+               ("golden-ratio" golden-ratio-mode "黄金比")
+               ("org-capture" org-capture-mode "覚")
+               ("view" view-mode "見")
+               ))
+    (pcase-let ((`(,module ,mode ,new-lighter) x))
+      (eval-after-load module
+        `(setf (cadr (assq ',mode minor-mode-alist))
+               (concat (propertize "・" 'face 'variable-pitch)
+                       ,new-lighter)))))
+#+END_SRC
 * F5 is jabber-activity-switch-to
 Added on [2015-09-09 Wed 10:33].
 #+BEGIN_SRC emacs-lisp
