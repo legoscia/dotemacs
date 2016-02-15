@@ -27,6 +27,21 @@ according to the terms of the [[http://www.wtfpl.net/][WTFPL]].
   (unless (require 'nadvice nil t)
     (defalias 'advice-add 'ignore))
 #+END_SRC
+** =string-suffix-p=
+=string-suffix-p= was added in Emacs 24.4.  Let's copy the
+implementation here.
+
+#+BEGIN_SRC emacs-lisp
+  (unless (fboundp 'string-suffix-p)
+    (defun string-suffix-p (suffix string  &optional ignore-case)
+      "Return non-nil if SUFFIX is a suffix of STRING.
+  If IGNORE-CASE is non-nil, the comparison is done without paying
+  attention to case differences."
+      (let ((start-pos (- (length string) (length suffix))))
+        (and (>= start-pos 0)
+             (eq t (compare-strings suffix nil nil
+                                    string start-pos nil ignore-case))))))
+#+END_SRC
 * Set up org-capture and bind it to F8
 #+BEGIN_SRC emacs-lisp
   (require 'org-capture)
