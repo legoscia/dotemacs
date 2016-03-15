@@ -598,6 +598,27 @@ Added on [2015-02-17 Tue 13:05].
   (add-to-list 'auto-mode-alist '("/\\(?:sys\\|rebar\\).config\\'" . erlang-mode))
 #+END_SRC
 
+** Ignore boring stuff when spell-checking Erlang docs
+
+Don't bother spell-checking variable names etc.
+
+#+BEGIN_SRC emacs-lisp
+(defun my-setup-ispell-for-docbook ()
+  (when (save-excursion
+          (goto-char (point-min))
+          (search-forward "<!DOCTYPE erlref" 1000 t))
+    (setq ispell-skip-html t)
+    (setq ispell-html-skip-alists
+          (append
+            (mapcar
+              (lambda (s)
+                (list (format "<%s\\>[^/>]*>" s) (format "</%s>" s)))
+              '("input" "c" "pre" "code" "name" "v" "title" "module" "file" "anno" "type_desc"))
+            '(("<seealso marker=\"[^\"]*\">" "</seealso>"))
+            '(("<[^ \t\n>]" ">")
+              ("&[^ \t\n;]" "[; \t\n]"))))))
+(add-hook 'nxml-mode-hook 'my-setup-ispell-for-docbook)
+#+END_SRC
 * Org-mode stuff
 ** Wrap in example tags
 Added on [2012-05-21 Mon 15:10].
