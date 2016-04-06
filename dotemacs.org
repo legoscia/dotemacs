@@ -1592,3 +1592,15 @@ Markdown.  Let's treat them as such.
   (with-eval-after-load "markdown-mode"
     (setf (cdr (assoc "\\.md\\'" auto-mode-alist)) 'gfm-mode))
 #+END_SRC
+* Set =show-trailing-whitespace= in programming modes
+Added on [2016-04-06 Wed 15:00].
+
+=show-trailing-whitespace= is nice, but setting it globally marks
+things where I can't do anything about it, e.g. VC Git log mode.
+Let's turn it on in programming mode buffers only:
+
+#+BEGIN_SRC emacs-lisp
+  (add-hook 'prog-mode-hook
+            (lambda ()
+              (setq-local show-trailing-whitespace t)))
+#+END_SRC
