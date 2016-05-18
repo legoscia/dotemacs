@@ -1607,3 +1607,15 @@ Let's turn it on in programming mode buffers only:
             (lambda ()
               (setq-local show-trailing-whitespace t)))
 #+END_SRC
+* Let ispell fix last word
+Added on [2016-05-18 Wed 13:11].
+
+If I notice that I misspelt a word, I hit =M-$= to ask ispell to fix
+it, and more often than not the 0th suggestion is the correct one.
+Let's make that quicker, by binding =C-$= to accepting the 0th
+suggestion.
+#+BEGIN_SRC emacs-lisp
+  (fset 'my-ispell-fix-word
+     (lambda (&optional arg) "Keyboard macro." (interactive "p") (kmacro-exec-ring-item (quote ("\2440" 0 "%d")) arg)))
+  (global-set-key (kbd "C-$") 'my-ispell-fix-word)
+#+END_SRC
