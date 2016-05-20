@@ -145,6 +145,13 @@ Also =M-s-up= and =M-s-down=, as it seems Ubuntu's window manager eats
 #+BEGIN_SRC emacs-lisp
   (global-set-key [(super ?a)] 'org-agenda)
 #+END_SRC
+
+Also s-', if s-a is taken by the window manager:
+
+#+BEGIN_SRC emacs-lisp
+  (global-set-key [(super ?')] 'org-agenda)
+#+END_SRC
+
 ** Bind M-/ to hippie-expand
 #+BEGIN_SRC emacs-lisp
   (global-set-key [(meta ?/)] 'hippie-expand)
@@ -1517,6 +1524,8 @@ Added on [2015-03-11 Wed 15:38].
       (message "%s" (elt strings (random (length strings))))))
 
   (global-set-key (kbd "s-5") 'relax)
+  ;; Also f6, in case the window manager steals super-5
+  (global-set-key [f6] 'relax)
 #+END_SRC
 * list-all-buffers
 Added on [2015-04-13 Mon 17:48].
