@@ -643,6 +643,23 @@ Don't bother spell-checking variable names etc.
               ("&[^ \t\n;]" "[; \t\n]"))))))
 (add-hook 'nxml-mode-hook 'my-setup-ispell-for-docbook)
 #+END_SRC
+
+** Remind erlang.el which buffer is my inferior erlang
+Added on [2015-06-11 Thu 17:10].
+
+Hitting =C-c C-k= makes erlang.el compile the current Erlang file in
+the most recently started inferior Erlang shell, unless that shell has
+already been killed, in which case it opens a new shell.  This little
+function lets you nudge it into using another Erlang shell.
+
+#+BEGIN_SRC emacs-lisp
+  (defun this-is-my-inferior-erlang (buffer)
+    (interactive "bCurrent inferior Erlang buffer: ")
+    ;; This is the _name_ of a buffer.  Get the actual buffer.
+    (setq buffer (get-buffer buffer))
+    (setq inferior-erlang-buffer buffer
+          inferior-erlang-process (get-buffer-process buffer)))
+#+END_SRC
 * Org-mode stuff
 ** Wrap in example tags
 Added on [2012-05-21 Mon 15:10].
