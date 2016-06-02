@@ -565,11 +565,20 @@ error and keep going without identifier colouring.
 
 ** Be careful about flymake					    :flymake:
 Added on [2012-06-25 Mon 16:11].
+
+Flymake errors out when activated on a buffer not visiting a file.
+
+Also, file/directory local variables are not taken into account
+somehow if flymake is activated in the mode hook.  That could result
+in using the wrong Erlang version (=erlang-flymake-command=), or not
+picking up include paths (see [[*Try harder to find include files in flymake][this section]]).  Use a timer to avoid
+that problem.
+
 #+BEGIN_SRC emacs-lisp
   (defun maybe-turn-on-flymake()
     (when (and buffer-file-name (file-name-directory buffer-file-name))
       (unless (file-remote-p buffer-file-name)
-        (flymake-mode))))
+        (run-with-timer 0.1 nil 'flymake-mode))))
 
   (eval-after-load "erlang-flymake"
     '(progn
