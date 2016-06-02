@@ -74,9 +74,17 @@ implementation here.
                           dir))))
     (setq my-org-current-file new-file))
 
+  (defun my-org-dotemacs-key-binding ()
+    (let* ((key (read-key-sequence "Bind key: " nil t))
+           (key-description (key-description key))
+           (command (read-command (format "Bind %s to command: " key-description))))
+      (format "* %s is %s\nAdded on %%U.\n\n%%?\n#+BEGIN_SRC emacs-lisp\n  (global-set-key (kbd %S) '%s)\n#+END_SRC"
+              key-description command key-description command)))
+
   (add-to-list 'org-capture-templates '("n" "Note" entry (clock) "* %^{Note title} %T\n%?"))
   (add-to-list 'org-capture-templates '("4" "New activity" entry (function my-org-capture-current-file) "* %^{New activity}\n%?\n%a" :prepend t :clock-in t))
   (add-to-list 'org-capture-templates '("e" "dotemacs" entry (file "~/dotemacs/dotemacs.org") "* %^{dotemacs snippet titled}\nAdded on %U.\n#+BEGIN_SRC emacs-lisp\n  %?\n#+END_SRC" :unnarrowed))
+  (add-to-list 'org-capture-templates '("E" "Key binding for dotemacs" entry (file "~/dotemacs/dotemacs.org") (function my-org-dotemacs-key-binding)))
   (add-to-list 'org-capture-templates '("l" "List item from active region" item (clock) "- %i\n" :immediate-finish t))
   (global-set-key [f8] 'org-capture)
   (global-set-key [S-f8] 'org-capture-goto-last-stored)
