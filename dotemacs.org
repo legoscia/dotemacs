@@ -1,7 +1,7 @@
 Load this file with:
 
 : (require 'org-loaddefs)
-: (org-babel-load-file "~/dotemacs/dotemacs.org")
+: (org-babel-load-file "~/dotemacs/dotemacs.org" t)
 
 The contents of this file may be modified and/or redistributed
 according to the terms of the [[http://www.wtfpl.net/][WTFPL]].
