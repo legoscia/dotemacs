@@ -861,20 +861,19 @@ If there are unbound variables, ask for their values.
   (defun eval-last-sexp-dwim ()
     "Evaluate sexp before point, asking for values of unbound variables."
     (interactive)
-    (lexical-let ((sexp (preceding-sexp)))
-      (labels
+    (let ((sexp (preceding-sexp)))
+      (cl-labels
           ((eval-it (the-sexp)
                     (condition-case e
                         (eval the-sexp)
                       (void-variable
-                       (lexical-let*
-                           ((var (cadr e))
-                            (val (car
-                                  (read-from-string
-                                   (read-from-minibuffer
-                                    (format "Value for `%s': " var)))))
-                            (new-sexp `(let ((,var ,val))
-                                         ,the-sexp)))
+                       (let* ((var (cadr e))
+                              (val (car
+                                    (read-from-string
+                                     (read-from-minibuffer
+                                      (format "Value for `%s': " var)))))
+                              (new-sexp `(let ((,var ,val))
+                                           ,the-sexp)))
                          (eval-it new-sexp))))))
         (message "%S" (eval-it sexp)))))
   (eval-after-load "lisp-mode"
