@@ -104,6 +104,8 @@ implementation here.
 ** Bind C-backspace to bury-buffer
 #+BEGIN_SRC emacs-lisp
   (global-set-key (kbd "C-<backspace>") 'bury-buffer)
+  ;; For whatever reason, this is what I get now on OSX:
+  (global-set-key (kbd "<clear> <M-backspace> <clear>") 'bury-buffer)
 #+END_SRC
 ** Bind super-i to imenu
 #+BEGIN_SRC emacs-lisp
