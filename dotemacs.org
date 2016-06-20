@@ -1281,10 +1281,13 @@ freezes for around a second when displaying a buffer containing such a
 character (at least on OSX).  Let's define a specific font for that
 character range.
 #+BEGIN_SRC emacs-lisp
-  (defun my-fix-emojis (&optional frame)
-    (set-fontset-font "fontset-default" '(#x10000 . #x1ffff) "Symbola" frame))
-  (my-fix-emojis)
-  (add-hook 'after-make-frame-functions 'my-fix-emojis)
+  ;; `set-fontset-font' is not defined when Emacs is built without a
+  ;; window system.
+  (when (fboundp 'set-fontset-font)
+    (defun my-fix-emojis (&optional frame)
+      (set-fontset-font "fontset-default" '(#x10000 . #x1ffff) "Symbola" frame))
+    (my-fix-emojis)
+    (add-hook 'after-make-frame-functions 'my-fix-emojis))
 #+END_SRC
 * Automate MobileOrg push/pull
 ** Push MobileOrg files asynchronously
