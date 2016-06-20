@@ -1255,7 +1255,8 @@ exact same command that flymake uses in a compilation buffer.
 * =insert-pair= bindings for square brackets and curly braces
 Added on [2014-11-20 Thu 11:33].
 #+BEGIN_SRC emacs-lisp
-  (global-set-key (kbd "M-[") 'insert-pair)
+  ;; XXX: this binding breaks decoding of PgUp / PgDn on terminals
+  ;;(global-set-key (kbd "M-[") 'insert-pair)
   (global-set-key (kbd "M-{") 'insert-pair)
 #+END_SRC
 * Kill windows with S-s-up/down
