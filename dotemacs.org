@@ -691,11 +691,12 @@ Added on [2012-05-21 Mon 15:10].
 * diff-mode bindings for magit-commit-mode
 Added on [2013-11-11 Mon 16:08].
 #+BEGIN_SRC emacs-lisp
-  (eval-after-load "magit"
-    '(progn
-       (define-key magit-commit-mode-map (kbd "C-c C-w") #'diff-tell-file-name)
-       (define-key magit-commit-mode-map (kbd "C-c C-a") #'diff-apply-hunk)
-       (define-key magit-commit-mode-map (kbd "C-c C-s") #'diff-split-hunk)))
+  (with-eval-after-load "magit"
+    (when (boundp 'magit-commit-mode-map)
+      ;; XXX: this map seems to have disappeared
+      (define-key magit-commit-mode-map (kbd "C-c C-w") #'diff-tell-file-name)
+      (define-key magit-commit-mode-map (kbd "C-c C-a") #'diff-apply-hunk)
+      (define-key magit-commit-mode-map (kbd "C-c C-s") #'diff-split-hunk)))
 #+END_SRC
 * ANSI colours in compilation buffer
 Added on [2013-12-10 Tue 10:08].
