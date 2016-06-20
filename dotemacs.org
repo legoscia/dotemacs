@@ -747,10 +747,18 @@ results, sorted by most frequent failures.
 #+BEGIN_SRC emacs-lisp
   (defvar my-junit-xml-failures ())
 
+  (defvar my-junit-xml-dir nil)
+
+  (defvar my-junit-xml-wildcard nil)
+
   (defun my-junit-xml-read-dir (dir wildcard)
-    (interactive (list
-                  (read-directory-name "Directory: " nil nil t)
-                  (read-string "Wildcard (default *.xml): " nil nil "*.xml")))
+    (interactive
+     (if (and my-junit-xml-dir my-junit-xml-wildcard
+              (y-or-n-p (format "Use %s and %s? " my-junit-xml-dir my-junit-xml-wildcard)))
+         (list my-junit-xml-dir my-junit-xml-wildcard)
+       (list
+        (read-directory-name "Directory: " nil nil t)
+        (read-string "Wildcard (default *.xml): " nil nil "*.xml"))))
     (let* ((default-directory dir)
            (files (file-expand-wildcards wildcard))
            (skipped 0)
@@ -833,10 +841,6 @@ results, sorted by most frequent failures.
         (setq my-junit-xml-latest-display (current-time))
 
         (display-buffer (current-buffer)))))
-
-  (defvar my-junit-xml-dir nil)
-
-  (defvar my-junit-xml-wildcard nil)
 
   (defun my-junit-xml-always-display-after-compile (dir wildcard)
     "After a compilation finishes, display JUnit info.
