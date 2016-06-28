@@ -1672,3 +1672,28 @@ suggestion.
      (lambda (&optional arg) "Keyboard macro." (interactive "p") (kmacro-exec-ring-item (quote ("\2440" 0 "%d")) arg)))
   (global-set-key (kbd "C-$") 'my-ispell-fix-word)
 #+END_SRC
+* Save compilation output for later perusal
+Added on [2016-06-28 Tue 13:47].
+#+BEGIN_SRC emacs-lisp
+  ;; On some systems, /tmp is automatically cleaned up periodically.
+  ;; For the others - we compress the output, so maybe it's not so bad?
+  (defvar my-compilation-archive-dir "/tmp/compilations")
+
+  (defvar my-compilation-archive-compression-suffix ".xz")
+
+  ;; for string-trim-right
+  (require 'subr-x)
+
+  (defun my-compilation-save-output (buffer status)
+    (make-directory my-compilation-archive-dir t)
+    (let ((output-file (expand-file-name
+                        (concat (format-time-string "%F-%T")
+                                my-compilation-archive-compression-suffix)
+                        my-compilation-archive-dir)))
+      (with-current-buffer buffer
+        (write-region (point-min) (point-max) output-file nil :silent))
+      (message "Compilation %s, output saved in %s" (string-trim-right status) output-file)))
+
+  (with-eval-after-load "compile"
+    (add-hook 'compilation-finish-functions 'my-compilation-save-output))
+#+END_SRC
