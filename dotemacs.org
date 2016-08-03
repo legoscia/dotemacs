@@ -1697,3 +1697,24 @@ Added on [2016-06-28 Tue 13:47].
   (with-eval-after-load "compile"
     (add-hook 'compilation-finish-functions 'my-compilation-save-output))
 #+END_SRC
+* Pretty-print XML in region in a new buffer
+Added on [2016-07-08 Fri 13:24].
+
+If you have an XML element printed on one single line, mark it and
+type =C-c x= to display it with line breaks and indentation in a fresh
+buffer.
+
+#+BEGIN_SRC emacs-lisp
+  (defun my-xml-pretty-print-region (beg end)
+    (interactive "r")
+    (let ((buffer (get-buffer-create "*display-xml*"))
+          (text (buffer-substring beg end)))
+      (with-current-buffer buffer
+        (nxml-mode)
+        (erase-buffer)
+        (insert text)
+        (shell-command-on-region (point-min) (point-max) "xmllint --format -" nil t)
+        (display-buffer buffer))))
+
+  (global-set-key (kbd "C-c x") 'my-xml-pretty-print-region)
+#+END_SRC
