@@ -1691,9 +1691,13 @@ Added on [2016-06-28 Tue 13:47].
                         (concat (format-time-string "%F-%T")
                                 my-compilation-archive-compression-suffix)
                         my-compilation-archive-dir)))
-      (with-current-buffer buffer
-        (write-region (point-min) (point-max) output-file nil :silent))
-      (message "Compilation %s, output saved in %s" (string-trim-right status) output-file)))
+      (condition-case e
+          (with-current-buffer buffer
+            (write-region (point-min) (point-max) output-file nil :silent)
+            (message "Compilation %s, output saved in %s" (string-trim-right status) output-file))
+        (error
+         (message "Compilation %s, failed to save output in %s: %s"
+                  (string-trim-right status) output-file (error-message-string e))))))
 
   (with-eval-after-load "compile"
     (add-hook 'compilation-finish-functions 'my-compilation-save-output))
