@@ -1723,3 +1723,72 @@ buffer.
 
   (global-set-key (kbd "C-c x") 'my-xml-pretty-print-region)
 #+END_SRC
+* Forward browse-url through SSH tunnel
+Added on [2017-01-12 Thu 12:08].
+
+If you're running Emacs on a remote machine over SSH, but want
+=browse-url= and friends to open web pages in the local (presumably
+graphical) browser, use this little thing.
+
+The idea is that on the local machine, you're running Emacs, listening
+on port 12345 on the loopback interface, and in your SSH session, you
+forward port 12345 from the remote machine back to the local machine.
+
+The remote machine just has to connect and send the URL:
+
+#+BEGIN_SRC emacs-lisp
+  (defun my-browse-url-remotely (url &optional _new-window)
+    (let ((s (open-network-stream "connect-url" nil "localhost" 12345)))
+      (process-send-string s (concat url "\n"))
+      (delete-process s)))
+#+END_SRC
+
+Add this to =.emacs= to set =browse-url= to use it:
+
+#+BEGIN_EXAMPLE
+  (with-eval-after-load "browse-url"
+    (setq browse-url-browser-function 'my-browse-url-remotely))
+#+END_EXAMPLE
+
+On the local machine, here is the listener:
+
+#+BEGIN_SRC emacs-lisp
+  (defvar my-wait-for-url-socket nil)
+
+  (defun my-wait-for-url ()
+    "Listen on port 12345 (loopback only) for URLs to open.
+  To make this thing open a URL, open a TCP connection, and send
+  the URL followed by a newline."
+    (when my-wait-for-url-socket
+      (delete-process my-wait-for-url-socket)
+      (setq my-wait-for-url-socket nil))
+    (setq my-wait-for-url-socket
+          (make-network-process
+           :name "my-wait-for-url"
+           :service 12345
+           :host 'local
+           :coding 'utf-8
+           :noquery t
+           :server 5
+           ;; :sentinel 'my-wait-for-url-sentinel
+           :filter 'my-wait-for-url-filter)))
+
+  (defun my-wait-for-url-filter (p data)
+    (let ((acc (or (process-get p :acc) "")))
+      (setq acc (concat acc data))
+      (process-put p data acc)
+      (when (string-suffix-p "\n" acc)
+        (setq acc (substring acc 0 -1))
+        (browse-url acc)
+        (delete-process p))))
+#+END_SRC
+
+Add this to =.emacs= on the local machine to start it:
+
+#+BEGIN_EXAMPLE
+  (my-wait-for-url)
+#+END_EXAMPLE
+
+This will "forward" =browse-url= calls from the remote machine to the
+local machine.  Customize =browse-url-browser-function= on the local
+machine if it doesn't use the web browser you expect.
