@@ -663,6 +663,21 @@ function lets you nudge it into using another Erlang shell.
     (setq inferior-erlang-buffer buffer
           inferior-erlang-process (get-buffer-process buffer)))
 #+END_SRC
+** Open erlang log files with =dos= coding system
+Added on [2017-04-06 Thu 13:33].
+
+"Erlang log files" as written by the =run_erl= utility have a strange
+mix of LF and CR-LF line separators that makes Emacs decide to use
+Unix line separators, leaving plenty of CRs visible as =^M= in the
+file.  Since those CRs are not useful, let's ask Emacs to consider
+such files to be using DOS-style line separators:
+
+#+BEGIN_SRC emacs-lisp
+(modify-coding-system-alist 'file "\\(^\\|/\\)erlang\\.log\\." 'dos)
+#+END_SRC
+
+(It turns out that the lines with just LF get read just fine.)
+
 * Org-mode stuff
 ** Wrap in example tags
 Added on [2012-05-21 Mon 15:10].
