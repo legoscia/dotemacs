@@ -1188,8 +1188,11 @@ For some reason, the function =tramp-compat-temporary-file-directory=
 disregards any customization for =temporary-file-directory=, and
 always goes with the _standard_ value.  On OSX, the standard value is
 likely to be fairly long, but =/tmp= is equivalent to it anyway:
+
+Though on Windows, =/tmp= doesn't exist, so check for that first:
 #+BEGIN_SRC emacs-lisp
-  (put 'temporary-file-directory 'standard-value (list "/tmp/"))
+  (when (file-directory-p "/tmp/")
+    (put 'temporary-file-directory 'standard-value (list "/tmp/")))
 #+END_SRC
 * Avoid CFGERR disabling Flymake				    :flymake:
 Added on [2014-06-30 Mon 12:18].
