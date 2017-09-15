@@ -1846,3 +1846,36 @@ hippie-expand can pick up words inside literal markers.
   (with-eval-after-load "org"
     (modify-syntax-entry ?= "." org-mode-syntax-table))
 #+END_SRC
+* Add org HTML export command for data URI
+Added on [2017-09-15 Fri 11:55].
+
+So I just want to export my org section to HTML in order to open it in
+a graphical browser, and copy it to clipboard as rich text.  Normally
+you'd export to a file, transfer the file to wherever the graphical
+browser is running, and open the file.  Let's cut out a few steps by
+directly opening a data URI containing the exported HTML.
+
+#+BEGIN_SRC emacs-lisp
+  (with-eval-after-load "ox-html"
+    (let* ((ox-html-backend (org-export-get-backend 'html))
+           (menu (org-export-backend-menu ox-html-backend))
+           (sub-entries (cl-third menu)))
+      (nconc sub-entries
+             (list (list ?d "Open HTML data URI" 'my-org-html-export-data-uri)))))
+
+  (defun my-org-html-export-data-uri (&optional async subtreep visible-only body-only ext-plist)
+    (interactive)
+    (let ((org-buffer (current-buffer)))
+      (with-temp-buffer
+        (let ((temp-buffer (current-buffer)))
+          (with-current-buffer org-buffer
+            (org-export-to-buffer 'html temp-buffer
+              async subtreep visible-only body-only ext-plist
+              (lambda () (set-auto-mode t)))))
+        (let ((data-uri
+               (concat "data:text/html;charset=utf-8;base64,"
+                       (base64-encode-string
+                        (encode-coding-string (buffer-string) 'utf-8)
+                        t))))
+          (browse-url data-uri)))))
+#+END_SRC
