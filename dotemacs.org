@@ -1757,7 +1757,7 @@ The remote machine just has to connect and send the URL:
 #+BEGIN_SRC emacs-lisp
   (defun my-browse-url-remotely (url &optional _new-window)
     (let ((s (open-network-stream "connect-url" nil "localhost" 12345)))
-      (process-send-string s (concat url "\n"))
+      (process-send-string s (concat "browse " url "\n"))
       (delete-process s)))
 #+END_SRC
 
@@ -1767,6 +1767,26 @@ Add this to =.emacs= to set =browse-url= to use it:
   (with-eval-after-load "browse-url"
     (setq browse-url-browser-function 'my-browse-url-remotely))
 #+END_EXAMPLE
+
+Also allow copying the region to the local clipboard:
+
+#+BEGIN_SRC emacs-lisp
+  (defun my-copy-remotely (beg end)
+    (interactive "r")
+    (let ((s (open-network-stream "connect-url" nil "localhost" 12345)))
+      (process-send-string
+       s
+       (concat "copy "
+               ;; encode as base64, so we can keep newline as delimiter
+               (base64-encode-string
+                (encode-coding-string (buffer-substring beg end) 'utf-8)
+                t)
+               "\n"))
+      (delete-process s)
+      (setq deactivate-mark t)
+      (indicate-copied-region)))
+  (global-set-key (kbd "C-c M-w") 'my-copy-remotely)
+#+END_SRC
 
 On the local machine, here is the listener:
 
@@ -1794,10 +1814,16 @@ On the local machine, here is the listener:
   (defun my-wait-for-url-filter (p data)
     (let ((acc (or (process-get p :acc) "")))
       (setq acc (concat acc data))
-      (process-put p data acc)
+      (process-put p :acc acc)
       (when (string-suffix-p "\n" acc)
         (setq acc (substring acc 0 -1))
-        (browse-url acc)
+        (cond
+         ((string-prefix-p "browse " acc)
+          (browse-url (substring acc (length "browse "))))
+         ((string-prefix-p "copy " acc)
+          (kill-new (decode-coding-string
+                     (base64-decode-string (substring acc (length "copy ")))
+                     'utf-8))))
         (delete-process p))))
 #+END_SRC
 
