@@ -1898,3 +1898,13 @@ highlighting.  Let's switch to a light theme temporarily, say
   (with-eval-after-load "ox-html"
     (advice-add 'org-export-to-buffer :around 'my-with-theme))
 #+END_SRC
+* Disable =edts-mode= when there is no file name
+Added on [2017-09-27 Wed 17:41].
+
+When opening an Erlang source block in org-mode, edts-mode fails to
+start because =buffer-file-name= returns nil.  Let's check for that:
+
+#+BEGIN_SRC emacs-lisp
+  (with-eval-after-load "edts-mode"
+    (advice-add 'edts-mode :before-while 'buffer-file-name))
+#+END_SRC
