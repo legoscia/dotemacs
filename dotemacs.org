@@ -1879,3 +1879,22 @@ directly opening a data URI containing the exported HTML.
                         t))))
           (browse-url data-uri)))))
 #+END_SRC
+* Theme for org html export
+Added on [2017-09-27 Wed 17:17].
+
+For exporting to HTML, my usual dark theme interferes with syntax
+highlighting.  Let's switch to a light theme temporarily, say
+=tsdh-light=, when exporting.
+
+#+BEGIN_SRC emacs-lisp
+  (defvar my-org-html-export-theme 'tsdh-light)
+
+  (defun my-with-theme (orig-fun &rest args)
+    (load-theme my-org-html-export-theme)
+    (unwind-protect
+        (apply orig-fun args)
+      (disable-theme my-org-html-export-theme)))
+
+  (with-eval-after-load "ox-html"
+    (advice-add 'org-export-to-buffer :around 'my-with-theme))
+#+END_SRC
