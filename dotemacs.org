@@ -1908,3 +1908,14 @@ start because =buffer-file-name= returns nil.  Let's check for that:
   (with-eval-after-load "edts-mode"
     (advice-add 'edts-mode :before-while 'buffer-file-name))
 #+END_SRC
+* Require gnus-icalendar
+Added on [2017-11-06 Mon 14:39].
+
+Make sure that calendar invites show up in a readable form, not raw
+Icalendar format.
+
+#+BEGIN_SRC emacs-lisp
+  (with-eval-after-load "gnus-art"
+    (require 'gnus-icalendar)
+    (gnus-icalendar-setup))
+#+END_SRC
