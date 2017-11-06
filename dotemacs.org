@@ -1908,6 +1908,31 @@ start because =buffer-file-name= returns nil.  Let's check for that:
   (with-eval-after-load "edts-mode"
     (advice-add 'edts-mode :before-while 'buffer-file-name))
 #+END_SRC
+* In org-mode, use flat list of headings for imenu
+Added on [2017-10-19 Thu 10:51].
+
+In org-mode, imenu by default shows the top-level headings, and then
+lets you drill down into sub-headings.  But when I use imenu, I might
+have the text of a sub-heading in mind, and I want to be able to find
+it directly without having to remember what the top-level heading
+might have been.
+
+#+BEGIN_SRC emacs-lisp
+  (defun my-org-imenu-hack (fun)
+    ;; Let's make everything look like a top-level heading, by changing
+    ;; `outline-level' to a function that always returns 1 if the
+    ;; heading is shallow enough.  I'm ignoring `org-reduced-level'.
+    (let* ((my-original-outline-level outline-level)
+           (outline-level
+            (lambda ()
+              (let ((actual-level (funcall my-original-outline-level)))
+                (if (<= actual-level org-imenu-depth)
+                    1
+                  actual-level)))))
+      (funcall fun)))
+
+  (advice-add 'org-imenu-get-tree :around 'my-org-imenu-hack)
+#+END_SRC
 * Require gnus-icalendar
 Added on [2017-11-06 Mon 14:39].
 
