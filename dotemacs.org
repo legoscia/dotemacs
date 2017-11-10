@@ -512,7 +512,8 @@ See https://github.com/ankurdave/color-identifiers-mode.
                    (nil font-lock-variable-name-face))))
 
   (with-eval-after-load "erlang"
-    (add-hook 'erlang-mode-hook 'color-identifiers-mode))
+    (with-eval-after-load "color-identifiers-mode"
+      (add-hook 'erlang-mode-hook 'color-identifiers-mode)))
 #+END_SRC
 *** Don't interrupt on color-identifiers-mode regexp overflow
 Added on [2015-06-12 Fri 13:14].
