@@ -1819,7 +1819,13 @@ On the local machine, here is the listener:
         (setq acc (substring acc 0 -1))
         (cond
          ((string-prefix-p "browse " acc)
-          (browse-url (substring acc (length "browse "))))
+          ;; `browse-url' uses the value of `browse-url-browser-function'
+          ;; to decide what to do.  However, in the *GNU Emacs* "splash"
+          ;; buffer, that variable has an unconditional buffer-local
+          ;; value of `eww-browse-url'!  Let's use a temporary buffer here,
+          ;; so that we get the default value, as set through Customize.
+          (with-temp-buffer
+            (browse-url (substring acc (length "browse ")))))
          ((string-prefix-p "copy " acc)
           (kill-new (decode-coding-string
                      (base64-decode-string (substring acc (length "copy ")))
