@@ -696,7 +696,95 @@ Added on [2012-05-21 Mon 15:10].
   (eval-after-load "org"
     '(define-key org-mode-map (kbd "C-c e") 'wrap-in-example-tags))
 #+END_SRC
+** In org-mode, the equal sign is "punctuation"
+Added on [2017-01-12 Thu 15:14].
 
+In org-mode, the equal sign should have syntax "punctuation", so that
+hippie-expand can pick up words inside literal markers.
+
+#+BEGIN_SRC emacs-lisp
+  (with-eval-after-load "org"
+    (modify-syntax-entry ?= "." org-mode-syntax-table))
+#+END_SRC
+
+** Add org HTML export command for data URI
+Added on [2017-09-15 Fri 11:55].
+
+So I just want to export my org section to HTML in order to open it in
+a graphical browser, and copy it to clipboard as rich text.  Normally
+you'd export to a file, transfer the file to wherever the graphical
+browser is running, and open the file.  Let's cut out a few steps by
+directly opening a data URI containing the exported HTML.
+
+#+BEGIN_SRC emacs-lisp
+  (with-eval-after-load "ox-html"
+    (let* ((ox-html-backend (org-export-get-backend 'html))
+           (menu (org-export-backend-menu ox-html-backend))
+           (sub-entries (cl-third menu)))
+      (nconc sub-entries
+             (list (list ?d "Open HTML data URI" 'my-org-html-export-data-uri)))))
+
+  (defun my-org-html-export-data-uri (&optional async subtreep visible-only body-only ext-plist)
+    (interactive)
+    (let ((org-buffer (current-buffer)))
+      (with-temp-buffer
+        (let ((temp-buffer (current-buffer)))
+          (with-current-buffer org-buffer
+            (org-export-to-buffer 'html temp-buffer
+              async subtreep visible-only body-only ext-plist
+              (lambda () (set-auto-mode t)))))
+        (let ((data-uri
+               (concat "data:text/html;charset=utf-8;base64,"
+                       (base64-encode-string
+                        (encode-coding-string (buffer-string) 'utf-8)
+                        t))))
+          (browse-url data-uri)))))
+#+END_SRC
+** Theme for org html export
+Added on [2017-09-27 Wed 17:17].
+
+For exporting to HTML, my usual dark theme interferes with syntax
+highlighting.  Let's switch to a light theme temporarily, say
+=tsdh-light=, when exporting.
+
+#+BEGIN_SRC emacs-lisp
+  (defvar my-org-html-export-theme 'tsdh-light)
+
+  (defun my-with-theme (orig-fun &rest args)
+    (load-theme my-org-html-export-theme)
+    (unwind-protect
+        (apply orig-fun args)
+      (disable-theme my-org-html-export-theme)))
+
+  (with-eval-after-load "ox-html"
+    (advice-add 'org-export-to-buffer :around 'my-with-theme))
+#+END_SRC
+
+** In org-mode, use flat list of headings for imenu
+Added on [2017-10-19 Thu 10:51].
+
+In org-mode, imenu by default shows the top-level headings, and then
+lets you drill down into sub-headings.  But when I use imenu, I might
+have the text of a sub-heading in mind, and I want to be able to find
+it directly without having to remember what the top-level heading
+might have been.
+
+#+BEGIN_SRC emacs-lisp
+  (defun my-org-imenu-hack (fun)
+    ;; Let's make everything look like a top-level heading, by changing
+    ;; `outline-level' to a function that always returns 1 if the
+    ;; heading is shallow enough.  I'm ignoring `org-reduced-level'.
+    (let* ((my-original-outline-level outline-level)
+           (outline-level
+            (lambda ()
+              (let ((actual-level (funcall my-original-outline-level)))
+                (if (<= actual-level org-imenu-depth)
+                    1
+                  actual-level)))))
+      (funcall fun)))
+
+  (advice-add 'org-imenu-get-tree :around 'my-org-imenu-hack)
+#+END_SRC
 
 * M-x ecd, to open eshell in the specified directory
 #+BEGIN_SRC emacs-lisp
@@ -1843,67 +1931,6 @@ Add this to =.emacs= on the local machine to start it:
 This will "forward" =browse-url= calls from the remote machine to the
 local machine.  Customize =browse-url-browser-function= on the local
 machine if it doesn't use the web browser you expect.
-* In org-mode, the equal sign is "punctuation"
-Added on [2017-01-12 Thu 15:14].
-
-In org-mode, the equal sign should have syntax "punctuation", so that
-hippie-expand can pick up words inside literal markers.
-
-#+BEGIN_SRC emacs-lisp
-  (with-eval-after-load "org"
-    (modify-syntax-entry ?= "." org-mode-syntax-table))
-#+END_SRC
-* Add org HTML export command for data URI
-Added on [2017-09-15 Fri 11:55].
-
-So I just want to export my org section to HTML in order to open it in
-a graphical browser, and copy it to clipboard as rich text.  Normally
-you'd export to a file, transfer the file to wherever the graphical
-browser is running, and open the file.  Let's cut out a few steps by
-directly opening a data URI containing the exported HTML.
-
-#+BEGIN_SRC emacs-lisp
-  (with-eval-after-load "ox-html"
-    (let* ((ox-html-backend (org-export-get-backend 'html))
-           (menu (org-export-backend-menu ox-html-backend))
-           (sub-entries (cl-third menu)))
-      (nconc sub-entries
-             (list (list ?d "Open HTML data URI" 'my-org-html-export-data-uri)))))
-
-  (defun my-org-html-export-data-uri (&optional async subtreep visible-only body-only ext-plist)
-    (interactive)
-    (let ((org-buffer (current-buffer)))
-      (with-temp-buffer
-        (let ((temp-buffer (current-buffer)))
-          (with-current-buffer org-buffer
-            (org-export-to-buffer 'html temp-buffer
-              async subtreep visible-only body-only ext-plist
-              (lambda () (set-auto-mode t)))))
-        (let ((data-uri
-               (concat "data:text/html;charset=utf-8;base64,"
-                       (base64-encode-string
-                        (encode-coding-string (buffer-string) 'utf-8)
-                        t))))
-          (browse-url data-uri)))))
-#+END_SRC
-* Theme for org html export
-Added on [2017-09-27 Wed 17:17].
-
-For exporting to HTML, my usual dark theme interferes with syntax
-highlighting.  Let's switch to a light theme temporarily, say
-=tsdh-light=, when exporting.
-
-#+BEGIN_SRC emacs-lisp
-  (defvar my-org-html-export-theme 'tsdh-light)
-
-  (defun my-with-theme (orig-fun &rest args)
-    (load-theme my-org-html-export-theme)
-    (unwind-protect
-        (apply orig-fun args)
-      (disable-theme my-org-html-export-theme)))
-
-  (with-eval-after-load "ox-html"
-    (advice-add 'org-export-to-buffer :around 'my-with-theme))
 #+END_SRC
 * Disable =edts-mode= when there is no file name
 Added on [2017-09-27 Wed 17:41].
@@ -1914,31 +1941,6 @@ start because =buffer-file-name= returns nil.  Let's check for that:
 #+BEGIN_SRC emacs-lisp
   (with-eval-after-load "edts-mode"
     (advice-add 'edts-mode :before-while 'buffer-file-name))
-#+END_SRC
-* In org-mode, use flat list of headings for imenu
-Added on [2017-10-19 Thu 10:51].
-
-In org-mode, imenu by default shows the top-level headings, and then
-lets you drill down into sub-headings.  But when I use imenu, I might
-have the text of a sub-heading in mind, and I want to be able to find
-it directly without having to remember what the top-level heading
-might have been.
-
-#+BEGIN_SRC emacs-lisp
-  (defun my-org-imenu-hack (fun)
-    ;; Let's make everything look like a top-level heading, by changing
-    ;; `outline-level' to a function that always returns 1 if the
-    ;; heading is shallow enough.  I'm ignoring `org-reduced-level'.
-    (let* ((my-original-outline-level outline-level)
-           (outline-level
-            (lambda ()
-              (let ((actual-level (funcall my-original-outline-level)))
-                (if (<= actual-level org-imenu-depth)
-                    1
-                  actual-level)))))
-      (funcall fun)))
-
-  (advice-add 'org-imenu-get-tree :around 'my-org-imenu-hack)
 #+END_SRC
 * Require gnus-icalendar
 Added on [2017-11-06 Mon 14:39].
