@@ -678,6 +678,45 @@ such files to be using DOS-style line separators:
 #+END_SRC
 
 (It turns out that the lines with just LF get read just fine.)
+** Special mode for Erlang boot files
+Added on [2017-11-29 Wed 16:26].
+
+Erlang boot files are just the corresponding script file converted to
+the external term format.  Seeing the binary format isn't very
+interesting, so let's decode it automatically whenever we happen to
+open a boot file!
+
+Doesn't work very well: you can't scroll, and you can't select part of
+the displayed text.  (I'm probably using the =display= property the
+wrong way.)  Still better than seeing the binary file...
+
+#+BEGIN_SRC emacs-lisp
+  (define-derived-mode erlang-boot-file-mode special-mode "Erlang-Boot"
+    "Major mode for binary Erlang boot files.
+  It invokes Erlang to decode the file."
+    (let ((temp-buffer (generate-new-buffer " *erlang-boot*")))
+      (unwind-protect
+          (let* ((coding-system-for-write 'binary)
+                 (exit-status
+                  (call-process-region
+                   (point-min) (point-max)
+                   "erl" nil temp-buffer nil
+                   "-noshell"
+                   "-eval"
+                   (format "{ok, X} = file:read(standard_io, %d), io:format(\"~p~n\", [binary_to_term(list_to_binary(X))])"
+                           (buffer-size))
+                   "-s" "erlang" "halt")))
+            (if (eq exit-status 0)
+                (with-silent-modifications
+                  (put-text-property
+                   (point-min) (point-max)
+                   'display (with-current-buffer temp-buffer (buffer-string))))
+              (error "Term conversion failed with %S; %s"
+                     exit-status (with-current-buffer temp-buffer (buffer-string)))))
+        (kill-buffer temp-buffer))))
+
+  (add-to-list 'auto-mode-alist '("\\.boot\\'" . erlang-boot-file-mode))
+#+END_SRC
 
 * Org-mode stuff
 ** Wrap in example tags
