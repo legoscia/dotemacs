@@ -686,15 +686,17 @@ the external term format.  Seeing the binary format isn't very
 interesting, so let's decode it automatically whenever we happen to
 open a boot file!
 
-Doesn't work very well: you can't scroll, and you can't select part of
-the displayed text.  (I'm probably using the =display= property the
-wrong way.)  Still better than seeing the binary file...
+This function replaces the binary contents of the boot file with the
+text representation.  That means that you can't modify the binary
+file, but why would you do that...  (Well, I guess we could reencode
+the text representation as a binary term and write that...)
 
 #+BEGIN_SRC emacs-lisp
   (define-derived-mode erlang-boot-file-mode special-mode "Erlang-Boot"
     "Major mode for binary Erlang boot files.
   It invokes Erlang to decode the file."
-    (let ((temp-buffer (generate-new-buffer " *erlang-boot*")))
+    (let ((file-buffer (current-buffer))
+          (temp-buffer (generate-new-buffer " *erlang-boot*")))
       (unwind-protect
           (let* ((coding-system-for-write 'binary)
                  (exit-status
@@ -708,9 +710,14 @@ wrong way.)  Still better than seeing the binary file...
                    "-s" "erlang" "halt")))
             (if (eq exit-status 0)
                 (with-silent-modifications
-                  (put-text-property
-                   (point-min) (point-max)
-                   'display (with-current-buffer temp-buffer (buffer-string))))
+                  ;; We're replacing the buffer contents with the text
+                  ;; representation, so try to make sure we don't save
+                  ;; the file.
+                  (add-hook 'write-contents-functions
+                            (apply-partially 'user-error "Cannot modify files in `erlang-boot-file-mode'")
+                            nil t)
+                  (with-current-buffer temp-buffer
+                    (copy-to-buffer file-buffer (point-min) (point-max))))
               (error "Term conversion failed with %S; %s"
                      exit-status (with-current-buffer temp-buffer (buffer-string)))))
         (kill-buffer temp-buffer))))
