@@ -280,7 +280,29 @@ cursor.
   (with-eval-after-load "multiple-cursors-core"
     (define-key mc/keymap (kbd "s-0") 'mc/insert-numbers))
 #+END_SRC
+** =C-M-c= exits multiple-cursors-mode
+Added on [2018-01-15 Mon 14:11].
 
+=C-g= is the normal keybinding for exiting multiple-cursors-mode, but
+it seems like it gets eaten if a filter function is running? or quits
+are inhibited for some other reason?  Let's try using =C-M-c=
+(normally bound to =exit-recursive-edit=) for that.
+
+Check =recursion-depth= first, just to be sure...
+
+#+BEGIN_SRC emacs-lisp
+  (with-eval-after-load "multiple-cursors-core"
+
+    (defun my-mc/quit ()
+      (interactive)
+      (if (zerop (recursion-depth))
+          ;; No recursive edit in progress - exit multiple-cursors-mode
+          (mc/keyboard-quit)
+        ;; Recursive edit in progress - use normal binding for C-M-c
+        (exit-recursive-edit)))
+
+    (define-key mc/keymap (kbd "C-M-c") 'my-mc/quit))
+#+END_SRC
 * Toggle full screen
 Added on [2013-09-11 Wed 17:59].
 
