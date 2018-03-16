@@ -2021,3 +2021,31 @@ Icalendar format.
     (require 'gnus-icalendar)
     (gnus-icalendar-setup))
 #+END_SRC
+* Invoke gdb on core file
+Added on [2018-03-16 Fri 14:12].
+
+It's harder than it should be to start M-x gdb with a core dump file.
+You have to specify where the executable is, even though that
+information is present in the core dump file, and then you have to
+specify an absolute path to the core dump, since M-x gdb moves to the
+directory where the executable is.  Let's create a function that
+simplifies that:
+
+#+BEGIN_SRC emacs-lisp
+  (defun my-gdb-core (filename)
+    (interactive "fCore file: ")
+    ;; Need absolute path, since M-x gdb moves to the directory where the executable is.
+    (setq filename (expand-file-name filename))
+    ;; file returns something like:
+    ;;
+    ;; core.47509: ELF 64-bit LSB core file x86-64, version 1 (SYSV), SVR4-style, from '/foo/bar/baz -v'
+    ;;
+    ;; We want to extract "/foo/bar/baz" from that.  Let's assume it doesn't contain spaces...
+    (let ((file-output (with-output-to-string
+                         (call-process "file" nil standard-output nil filename))))
+      (unless (string-match ", from '\\([^ ]+\\)" file-output)
+        (error "Failed to find executable name in `file' output: %s" file-output))
+      (let ((executable (match-string 1 file-output)))
+        (gdb
+         (format "gdb -i=mi %s %s" executable filename)))))
+#+END_SRC
