@@ -206,12 +206,13 @@ Also s-', if s-a is taken by the window manager:
   (global-set-key (kbd "<C-f9>") 'org-clock-goto)
 #+end_src
 
-** Clock in recent task with F7
+** Clock in recent task with F7, clock out with M-F7
 #+BEGIN_SRC emacs-lisp
   (defun org-clock-in-menu ()
     (interactive)
     (org-clock-in (list 4)))
   (global-set-key [f7] 'org-clock-in-menu)
+  (global-set-key (kbd "ESC <f7>") 'org-clock-out)
 #+END_SRC
 
 ** s-SPC for ace-jump
