@@ -748,6 +748,23 @@ the text representation as a binary term and write that...)
   (add-to-list 'auto-mode-alist '("\\.boot\\'" . erlang-boot-file-mode))
 #+END_SRC
 
+** Prefix edts node names
+EDTS uses the directory name for the name of its worker node, which
+often collides with the name you'd use when running the application in
+an Erlang node... so let's add "edts-" to the beginning of the node
+that EDTS starts when opening the source code.
+
+#+BEGIN_SRC emacs-lisp
+  (defun my-fix-edts-project-config-default (config)
+    (let ((entry (assq :node-sname config)))
+      (setf (cdr entry) (concat "edts-" (cdr entry)))
+      config))
+
+  (with-eval-after-load "edts-project"
+    (advice-add 'edts-project--config-default :filter-return
+                'my-fix-edts-project-config-default))
+
+#+END_SRC
 * Org-mode stuff
 ** Wrap in example tags
 Added on [2012-05-21 Mon 15:10].
