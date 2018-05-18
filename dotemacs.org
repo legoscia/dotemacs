@@ -2025,8 +2025,11 @@ When opening an Erlang source block in org-mode, edts-mode fails to
 start because =buffer-file-name= returns nil.  Let's check for that:
 
 #+BEGIN_SRC emacs-lisp
+  (defun my-buffer-has-file-name-p (&rest _ignored)
+    (not (null (buffer-file-name))))
+
   (with-eval-after-load "edts-mode"
-    (advice-add 'edts-mode :before-while 'buffer-file-name))
+    (advice-add 'edts-mode :before-while 'my-buffer-has-file-name-p))
 #+END_SRC
 * Require gnus-icalendar
 Added on [2017-11-06 Mon 14:39].
