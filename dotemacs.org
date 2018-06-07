@@ -704,6 +704,24 @@ such files to be using DOS-style line separators:
 #+END_SRC
 
 (It turns out that the lines with just LF get read just fine.)
+** Prefix edts node names
+EDTS uses the directory name for the name of its worker node, which
+often collides with the name you'd use when running the application in
+an Erlang node... so let's add "edts-" to the beginning of the node
+that EDTS starts when opening the source code.
+
+#+BEGIN_SRC emacs-lisp
+  (defun my-fix-edts-project-config-default (config)
+    (let ((entry (assq :node-sname config)))
+      (setf (cdr entry) (concat "edts-" (cdr entry)))
+      config))
+
+  (with-eval-after-load "edts-project"
+    (advice-add 'edts-project--config-default :filter-return
+                'my-fix-edts-project-config-default))
+
+#+END_SRC
+* Erlang extra modes						     :erlang:
 ** Special mode for Erlang boot files
 Added on [2017-11-29 Wed 16:26].
 
@@ -751,22 +769,63 @@ the text representation as a binary term and write that...)
   (add-to-list 'auto-mode-alist '("\\.boot\\'" . erlang-boot-file-mode))
 #+END_SRC
 
-** Prefix edts node names
-EDTS uses the directory name for the name of its worker node, which
-often collides with the name you'd use when running the application in
-an Erlang node... so let's add "edts-" to the beginning of the node
-that EDTS starts when opening the source code.
-
+** escript zip support for archive-mode				     :erlang:
+Added on [2014-05-23 Fri 18:26].
 #+BEGIN_SRC emacs-lisp
-  (defun my-fix-edts-project-config-default (config)
-    (let ((entry (assq :node-sname config)))
-      (setf (cdr entry) (concat "edts-" (cdr entry)))
-      config))
+  (defvar archive-escript-zip-hook nil)
 
-  (with-eval-after-load "edts-project"
-    (advice-add 'edts-project--config-default :filter-return
-                'my-fix-edts-project-config-default))
+  (defun archive-escript-zip--narrow ()
+    (widen)
+    (goto-char (point-min))
+    (search-forward-regexp "^\\(PK00\\)?[P]K\003\004")
+    (narrow-to-region (match-beginning 0) (point-max)))
 
+  (defun archive-escript-zip-summarize ()
+    (archive-escript-zip--narrow)
+    (archive-zip-summarize))
+
+  (defun archive-escript-zip-extract (_archive name)
+    (let ((temp-file (make-temp-file "escript-archive" nil ".zip"))
+          (coding-system-for-write 'binary))
+      (unwind-protect
+          (progn
+            (with-current-buffer archive-superior-buffer
+              (save-restriction
+                (widen)
+                (write-region archive-proper-file-start
+                              (point-max)
+                              temp-file nil :silent)))
+            (archive-zip-extract temp-file name))
+        (delete-file temp-file))))
+
+  (defun archive-escript-zip-find-type (old-fun)
+    (widen)
+    (goto-char (point-min))
+    (let (case-fold-search)
+      (cond
+       ((and (looking-at "#!.*escript")
+             (search-forward-regexp "^\\(PK00\\)?[P]K\003\004" nil t))
+        'escript-zip)
+       (t
+        (funcall old-fun)))))
+
+  (with-eval-after-load "arc-mode"
+    (advice-add 'archive-find-type :around #'archive-escript-zip-find-type))
+
+  (defun archive-escript-zip--maybe-turn-on ()
+    (require 'arc-mode)
+    (save-excursion
+      (save-restriction
+        (when (eq (ignore-errors (archive-find-type)) 'escript-zip)
+          (run-with-idle-timer
+           0.1 nil
+           (lambda (buffer)
+             (with-current-buffer buffer
+               (archive-mode)))
+           (current-buffer))))))
+
+  (with-eval-after-load "erlang"
+    (add-hook 'erlang-mode-hook 'archive-escript-zip--maybe-turn-on))
 #+END_SRC
 * Org-mode stuff
 ** Wrap in example tags
@@ -1300,64 +1359,6 @@ Added on [2014-04-07 Mon 01:44].
           (emms-pause)))))
 
   (add-hook 'focus-in-hook 'my-emms-focus-in-play)
-#+END_SRC
-* escript zip support for archive-mode				     :erlang:
-Added on [2014-05-23 Fri 18:26].
-#+BEGIN_SRC emacs-lisp
-  (defvar archive-escript-zip-hook nil)
-
-  (defun archive-escript-zip--narrow ()
-    (widen)
-    (goto-char (point-min))
-    (search-forward-regexp "^\\(PK00\\)?[P]K\003\004")
-    (narrow-to-region (match-beginning 0) (point-max)))
-
-  (defun archive-escript-zip-summarize ()
-    (archive-escript-zip--narrow)
-    (archive-zip-summarize))
-
-  (defun archive-escript-zip-extract (_archive name)
-    (let ((temp-file (make-temp-file "escript-archive" nil ".zip"))
-          (coding-system-for-write 'binary))
-      (unwind-protect
-          (progn
-            (with-current-buffer archive-superior-buffer
-              (save-restriction
-                (widen)
-                (write-region archive-proper-file-start
-                              (point-max)
-                              temp-file nil :silent)))
-            (archive-zip-extract temp-file name))
-        (delete-file temp-file))))
-
-  (defun archive-escript-zip-find-type (old-fun)
-    (widen)
-    (goto-char (point-min))
-    (let (case-fold-search)
-      (cond
-       ((and (looking-at "#!.*escript")
-             (search-forward-regexp "^\\(PK00\\)?[P]K\003\004" nil t))
-        'escript-zip)
-       (t
-        (funcall old-fun)))))
-
-  (with-eval-after-load "arc-mode"
-    (advice-add 'archive-find-type :around #'archive-escript-zip-find-type))
-
-  (defun archive-escript-zip--maybe-turn-on ()
-    (require 'arc-mode)
-    (save-excursion
-      (save-restriction
-        (when (eq (ignore-errors (archive-find-type)) 'escript-zip)
-          (run-with-idle-timer
-           0.1 nil
-           (lambda (buffer)
-             (with-current-buffer buffer
-               (archive-mode)))
-           (current-buffer))))))
-
-  (with-eval-after-load "erlang"
-    (add-hook 'erlang-mode-hook 'archive-escript-zip--maybe-turn-on))
 #+END_SRC
 * Avoid "ControlPath too long" with Tramp on OSX
 Added on [2014-06-19 Thu 14:51].
