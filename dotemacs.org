@@ -721,6 +721,30 @@ that EDTS starts when opening the source code.
                 'my-fix-edts-project-config-default))
 
 #+END_SRC
+** Run Common Test case under point
+Added on [2018-06-08 Fri 15:44].
+
+Get the name of the function under point, assumed to be a Common Test
+test case, and the name of the file, and pass those as arguments to
+"rebar3 ct", to run only this one test.
+
+Room for improvement: figure out if the test case needs to be run as
+part of a group (or many groups).
+
+#+BEGIN_SRC emacs-lisp
+  (defun my-run-common-test-case-at-point ()
+    (interactive)
+    (let ((our-file (buffer-file-name))
+          (case (save-excursion
+                  (erlang-beginning-of-function)
+                  (erlang-get-function-name)))
+          (rebar-config-dir (locate-dominating-file (buffer-file-name) "rebar.config")))
+      (or case (error "test case name not found"))
+      (or rebar-config-dir (error "rebar.config not found"))
+      (let ((default-directory rebar-config-dir)
+            (suite (file-relative-name our-file rebar-config-dir)))
+        (compile (format "./rebar3 ct --suite %s --case %s" suite case)))))
+#+END_SRC
 * Erlang extra modes						     :erlang:
 ** Special mode for Erlang boot files
 Added on [2017-11-29 Wed 16:26].
