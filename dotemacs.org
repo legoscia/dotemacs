@@ -2119,3 +2119,32 @@ simplifies that:
         (gdb
          (format "gdb -i=mi %s %s" executable filename)))))
 #+END_SRC
+* Workaround for ivy-completing-read vs alists with symbols as keys
+Added on [2018-06-08 Fri 16:55].
+
+For example, proced filters and formats.  proced passes an alist whose
+keys are symbols as =collection= to =completing-read=, but
+=ivy-completing-read= doesn't like that.  Without this advice, trying
+to change filter or format in a proced buffer (key bindings =f= and
+=F=) gives an Ivy prompt with zero matches, where you can't select
+anything because a match is required.
+#+BEGIN_SRC emacs-lisp
+  (defun my-ivy-completing-read-vs-alists-with-symbols (args)
+    (let ((collection (nth 1 args)))
+      (when (and (listp collection)
+                 (consp (car collection))
+                 (symbolp (caar collection)))
+        (setq collection
+              (mapcar
+               (lambda (entry)
+                 (if (and (consp entry) (symbolp (car entry)))
+                     ;; Don't need the cdr here
+                     (symbol-name (car entry))
+                   entry))
+               collection))
+        (setf (nth 1 args) collection)))
+    args)
+
+  (with-eval-after-load "ivy"
+    (advice-add 'ivy-completing-read :filter-args 'my-ivy-completing-read-vs-alists-with-symbols))
+#+END_SRC
