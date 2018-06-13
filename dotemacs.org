@@ -2148,3 +2148,29 @@ anything because a match is required.
   (with-eval-after-load "ivy"
     (advice-add 'ivy-completing-read :filter-args 'my-ivy-completing-read-vs-alists-with-symbols))
 #+END_SRC
+* Preserve proced filters etc
+Added on [2018-06-11 Mon 13:28].
+
+Normally, if you run =M-x proced= when there is already a Proced
+buffer, this buffer will be displayed, keeping any existing filter and
+format settings.  However, if there are no processes matching the
+current filter, the buffer appears empty, and the =proced= function
+sets the major mode again, wiping out buffer local variables such as
+current filter and format.
+
+Let's try to work around that.
+
+#+BEGIN_SRC emacs-lisp
+  (defun my-proced-maybe (oldfun &rest args)
+    (let ((buffer (get-buffer "*Proced*")))
+      (if (or (not (bufferp buffer))
+              (not (eq 'proced-mode (buffer-local-value 'major-mode buffer))))
+          ;; Let `proced' do its thing
+          (apply oldfun args)
+        ;; Pop to existing proced buffer, and update without reverting
+        (pop-to-buffer buffer)
+        (proced-update t))))
+
+  (with-eval-after-load "proced"
+    (advice-add 'proced :around 'my-proced-maybe))
+#+END_SRC
