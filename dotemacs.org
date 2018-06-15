@@ -745,6 +745,40 @@ part of a group (or many groups).
             (suite (file-relative-name our-file rebar-config-dir)))
         (compile (format "./rebar3 ct --suite %s --case %s" suite case)))))
 #+END_SRC
+** Print Erlang term in region
+Added on [2018-06-15 Fri 14:31].
+#+BEGIN_SRC emacs-lisp
+  (defun my-print-erlang-term-in-region (beg end)
+    "Try to display the Erlang term in the region.
+  If it's an iolist or a binary, just print it as a string.
+  If it's any other term, print it with ~p format.
+  Display the output in a buffer."
+    (interactive "r")
+    (let ((filename (make-temp-file "erlang-term")))
+      (unwind-protect
+          (progn
+            (write-region beg end filename nil :silent)
+            ;; add trailing dot if missing...
+            (unless (= ?. (char-before end))
+              (with-temp-buffer
+                (insert ".")
+                (write-region (point-min) (point-max) filename t :silent)))
+            (with-current-buffer (get-buffer-create "*erlang-term*")
+              (erase-buffer)
+              (call-process
+               "erl" nil t nil "-noshell" "-eval"
+               (concat
+                "{ok, Term} = file:consult(\""
+                filename
+                "\"),\n"
+                "try iolist_size(Term) of _ -> io:format(\"~s\", [Term])\n"
+                "catch error:badarg -> io:format(\"~p\", [Term]) end")
+               "-s" "init" "stop")
+              (display-buffer (current-buffer))))
+        (delete-file filename))))
+
+  (global-set-key (kbd "C-c e") 'my-print-erlang-term-in-region)
+#+END_SRC
 * Erlang extra modes						     :erlang:
 ** Special mode for Erlang boot files
 Added on [2017-11-29 Wed 16:26].
