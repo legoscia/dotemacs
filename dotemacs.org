@@ -2174,6 +2174,24 @@ Let's try to work around that.
   (with-eval-after-load "proced"
     (advice-add 'proced :around 'my-proced-maybe))
 #+END_SRC
+* Restrict =ivy-restrict-to-matches=
+Added on [2018-06-13 Wed 12:07].
+
+=ivy-restrict-to-matches= is bound to =S-SPC=, which I somehow manage
+to type when there are no completion candidates, meaning that I lose
+what I typed and don't gain anything in terms of restricting
+completion candidates.  In that case, I probably meant to type a
+space, so let's do that instead.
+
+#+BEGIN_SRC emacs-lisp
+  (defun my-restrict-ivy-restrict-to-matches (oldfun &rest args)
+    (if (null ivy--all-candidates)
+        (insert " ")
+      (apply oldfun args)))
+
+  (with-eval-after-load "ivy"
+    (advice-add 'ivy-restrict-to-matches :around 'my-restrict-ivy-restrict-to-matches))
+#+END_SRC
 * Turn on eldoc-mode in emacs-lisp-mode
 Added on [2018-06-15 Fri 14:33].
 #+BEGIN_SRC emacs-lisp
