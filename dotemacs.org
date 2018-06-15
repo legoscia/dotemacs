@@ -2174,3 +2174,8 @@ Let's try to work around that.
   (with-eval-after-load "proced"
     (advice-add 'proced :around 'my-proced-maybe))
 #+END_SRC
+* Turn on eldoc-mode in emacs-lisp-mode
+Added on [2018-06-15 Fri 14:33].
+#+BEGIN_SRC emacs-lisp
+  (add-hook 'emacs-lisp-mode-hook 'turn-on-eldoc-mode)
+#+END_SRC
