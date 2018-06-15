@@ -1866,12 +1866,16 @@ Added on [2015-08-21 Fri 12:47].
                ("minimap" minimap-mode "小図")
                ("compile" compilation-in-progress "変換")
                ("color-identifiers-mode" color-identifiers-mode "色")
+               ("autorevert" auto-revert-mode "♻")
+               ("ivy" ivy-mode "")
                ))
     (pcase-let ((`(,module ,mode ,new-lighter) x))
       (eval-after-load module
         `(setf (cadr (assq ',mode minor-mode-alist))
-               (concat (propertize "・" 'face 'variable-pitch)
-                       ,new-lighter)))))
+               ,(if (string= new-lighter "")
+                    ""
+                  `(concat (propertize "・" 'face 'variable-pitch)
+                           ,new-lighter))))))
 #+END_SRC
 * F5 is jabber-activity-switch-to
 Added on [2015-09-09 Wed 10:33].
