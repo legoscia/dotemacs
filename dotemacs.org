@@ -2234,4 +2234,5 @@ space, so let's do that instead.
 Added on [2018-06-15 Fri 14:33].
 #+BEGIN_SRC emacs-lisp
   (add-hook 'emacs-lisp-mode-hook 'turn-on-eldoc-mode)
+  (add-hook 'inferior-emacs-lisp-mode-hook 'turn-on-eldoc-mode)
 #+END_SRC
