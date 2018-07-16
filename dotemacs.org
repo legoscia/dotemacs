@@ -261,6 +261,14 @@ I keep hitting C-h C-c (=describe-copying=) when I mean C-h c
   (with-eval-after-load "help"
     (define-key help-map "\C-c" 'describe-key-briefly))
 #+END_SRC
+** =C-c b= is =browse-at-remote=
+ Added on [2018-06-29 Fri 15:50].
+
+ Open the current Git repository in a web browser.
+
+ #+BEGIN_SRC emacs-lisp
+ (global-set-key (kbd "C-c b") 'browse-at-remote)
+ #+END_SRC
 * multiple-cursors
 Added on [2013-05-29 Wed 12:31].
 #+BEGIN_SRC emacs-lisp
