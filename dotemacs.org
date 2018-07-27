@@ -2162,3 +2162,35 @@ let's take out =gcov-called-line= from
     (setq compilation-error-regexp-alist
 	  (delq 'gcov-called-line compilation-error-regexp-alist)))
 #+END_SRC
+* Match Elixir errors in compilation output
+Added on [2018-07-27 Fri 13:39].
+
+E.g.:
+
+#+BEGIN_EXAMPLE
+** (CompileError) lib/foo.ex:42: this is wrong
+#+END_EXAMPLE
+
+#+BEGIN_SRC emacs-lisp
+  (setq compilation-error-regexp-alist-alist
+	(delq (assq 'elixir-error compilation-error-regexp-alist-alist)
+	      compilation-error-regexp-alist-alist))
+  (add-to-list
+   'compilation-error-regexp-alist-alist
+   (cons
+    'elixir-error
+    (list
+     "^\\*\\* ([^)]+) \\([^ :]+\\):\\([0-9]+\\):"
+     ;; file
+     1
+     ;; line
+     2
+     ;; column
+     nil
+     ;; type
+     2
+     ;; hyperlink
+     nil
+     )))
+  (add-to-list 'compilation-error-regexp-alist 'elixir-error)
+#+END_SRC
