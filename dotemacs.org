@@ -2138,3 +2138,27 @@ Added on [2018-06-15 Fri 14:33].
   (add-hook 'emacs-lisp-mode-hook 'turn-on-eldoc-mode)
   (add-hook 'inferior-emacs-lisp-mode-hook 'turn-on-eldoc-mode)
 #+END_SRC
+* Remove annoying entries from compilation-error-regexp-alist
+Added on [2018-07-24 Tue 14:56].
+
+The =gcov-called-line= entry matches time stamps at the beginning of
+the line in compilation output, e.g.:
+
+#+BEGIN_EXAMPLE
+14:49:57.795 [info]  Sent 200 in 10ms
+#+END_EXAMPLE
+
+This becomes a link to line 49 in an unknown file.
+
+(If this were gcov output, it would mean that line 49 has been executed
+14 times.)
+
+But I don't want those to be highlighted as links to source files, so
+let's take out =gcov-called-line= from
+=compilation-error-regexp-alist=.
+
+#+BEGIN_SRC emacs-lisp
+  (with-eval-after-load "compile"
+    (setq compilation-error-regexp-alist
+	  (delq 'gcov-called-line compilation-error-regexp-alist)))
+#+END_SRC
