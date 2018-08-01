@@ -2194,3 +2194,18 @@ E.g.:
      )))
   (add-to-list 'compilation-error-regexp-alist 'elixir-error)
 #+END_SRC
+* Fold elixir imenu menus
+Added on [2018-07-27 Fri 17:24].
+
+When using imenu in an Elixir buffer, elixir-mode helpfully splits the
+list of definitions into public functions, private functions, macros,
+etc.  However, that means that I can't just type the name of a
+function at the imenu prompt: I need to guess correctly whether that
+function is public or private first.  That's the kind of work that I
+want my computer to do for me.
+
+#+BEGIN_SRC emacs-lisp
+  (with-eval-after-load "elixir-mode"
+    (dolist (entry elixir-imenu-generic-expression)
+      (setf (car entry) nil)))
+#+END_SRC
