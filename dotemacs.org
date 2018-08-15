@@ -2209,3 +2209,25 @@ want my computer to do for me.
     (dolist (entry elixir-imenu-generic-expression)
       (setf (car entry) nil)))
 #+END_SRC
+* Don't suggest upgrading packages that require a newer Emacs
+Added on [2018-08-15 Wed 16:43].
+
+In =list-packages=, hitting =U= marks all upgradable packages for
+upgrade, including those that depend on a newer Emacs version.  That's
+not very useful, so let's filter out those.
+
+#+BEGIN_SRC emacs-lisp
+  (defun my-filter-upgrades-requiring-newer-emacs (upgradable)
+    (cl-remove-if-not
+     (lambda (entry)
+       (let* ((reqs (package-desc-reqs (cdr entry)))
+	      (required-emacs (assq 'emacs reqs)))
+	 (or (null required-emacs)
+	     (version-list-<= (cadr required-emacs)
+			      (list emacs-major-version emacs-minor-version)))))
+     upgradable))
+
+  (with-eval-after-load "package"
+    (advice-add 'package-menu--find-upgrades :filter-return
+		'my-filter-upgrades-requiring-newer-emacs))
+#+END_SRC
