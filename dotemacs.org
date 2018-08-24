@@ -1778,6 +1778,14 @@ Added on [2015-08-21 Fri 12:47].
                     ""
                   `(concat (propertize "・" 'face 'variable-pitch)
                            ,new-lighter))))))
+
+  (defun my-flymake-update-lighter (&rest _ignore)
+    ;; This is not a fly but a honey bee - close enough
+    (let ((replacement (concat (propertize "・" 'face 'variable-pitch) "🐝")))
+      (setq flymake-mode-line (replace-regexp-in-string " Flymake" replacement flymake-mode-line))))
+
+  (with-eval-after-load "flymake"
+    (advice-add 'flymake-report-status :after 'my-flymake-update-lighter))
 #+END_SRC
 * F5 is jabber-activity-switch-to
 Added on [2015-09-09 Wed 10:33].
