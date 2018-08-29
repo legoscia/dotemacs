@@ -894,6 +894,30 @@ might have been.
   (advice-add 'org-imenu-get-tree :around 'my-org-imenu-hack)
 #+END_SRC
 
+** Fix narrowing when prepending entries in org-capture
+Added on [2018-08-29 Wed 11:36].
+
+When an entry in =org-capture-templates= has =:prepend t=, the capture
+buffer will be narrowed up to the following headline, meaning that if
+you don't take care to preserve the ending newline in the capture
+buffer, you'll insert text before the following headline when
+finishing the capture, thereby making it not a headline.
+
+Let's avoid that by excluding the trailing newline in
+=org-capture-narrow=.
+
+#+BEGIN_SRC emacs-lisp
+  (defun my-org-capture-narrow-protect-headlines (args)
+    (pcase-let ((`(,beg ,end) args))
+      (save-excursion
+        (goto-char end)
+        (when (and (org-at-heading-p) (eq ?\n (char-before)))
+          (setq end (1- end))))
+      (list beg end)))
+
+  (with-eval-after-load "org-capture"
+    (advice-add 'org-capture-narrow :filter-args 'my-org-capture-narrow-protect-headlines))
+#+END_SRC
 * M-x ecd, to open eshell in the specified directory
 #+BEGIN_SRC emacs-lisp
   (defun ecd (d)
