@@ -918,6 +918,98 @@ Let's avoid that by excluding the trailing newline in
   (with-eval-after-load "org-capture"
     (advice-add 'org-capture-narrow :filter-args 'my-org-capture-narrow-protect-headlines))
 #+END_SRC
+** Auto fill mode in org-capture mode
+Added on [2014-01-14 Tue 14:44].
+#+BEGIN_SRC emacs-lisp
+  (eval-after-load "org-capture"
+    '(add-hook 'org-capture-mode-hook 'turn-on-auto-fill))
+#+END_SRC
+** Fix org-mode-line-clock
+  CLOCK: [2014-02-21 Fri 16:28]--[2014-02-21 Fri 16:58] =>  0:30
+Added on [2014-02-21 Fri 16:28].
+
+=org-mode-line-clock= is defined through =org-copy-face= as inheriting
+from =mode-line=.  However, that's not what I want, because it gets
+the "mode line active" face even in inactive buffers.
+#+BEGIN_SRC emacs-lisp
+  (eval-after-load "org-faces"
+    '(set-face-attribute 'org-mode-line-clock nil
+                         :inherit nil))
+#+END_SRC
+** Automate MobileOrg push/pull
+*** Push MobileOrg files asynchronously
+Added on [2015-03-02 Mon 09:34].
+
+This is somewhat annoying: after 60 seconds of idle time after saving
+an org-mode file, it blocks the entire Emacs session with agenda
+creation, copying etc.  I find it's better than the alternative, which
+is remembering to push manually.
+#+BEGIN_SRC emacs-lisp
+  (defun my-org-mobile-push-async ()
+    (interactive)
+    (async-start
+     `(lambda ()
+        (require 'org-mobile)
+        ,(async-inject-variables "org-\\(agenda-files\\|agenda-custom-commands\\|mobile\\)")
+        ,(async-inject-variables "\\`version-control\\'")
+        ;; Need to avoid prompting to delete old backups:
+        (setq delete-old-versions 'never)
+        ;; XXX: need to avoid queries about "stealing" unsaved org files
+        ;; XXX: is this the right way to do it?
+        (setq org-mobile-force-id-on-agenda-items nil)
+        (org-mobile-push)
+        ;; XXX: necessary?
+        ;; (save-some-buffers t)
+        )
+     (lambda (result)
+       (unless (equal result "Files for mobile viewer staged")
+         (warn "push result: %S" result)))))
+
+  ;; Let's do better than this:
+  ;; (with-eval-after-load "org"
+  ;;   (add-hook 'org-mode-hook
+  ;;             (lambda ()
+  ;;               (add-hook 'after-save-hook 'my-org-mobile-push-async nil t))))
+
+  (defvar my-org-mobile-push-timer nil)
+
+  (defun my-org-mobile-push-later ()
+    (interactive)
+    (unless my-org-mobile-push-timer
+      (setq my-org-mobile-push-timer
+            (run-with-idle-timer
+             60 nil
+             (lambda ()
+               (setq my-org-mobile-push-timer nil)
+               (let ((my-org-mobile-push-timer t))
+                 (org-mobile-push)))))))
+
+  (when (file-exists-p "~/Dropbox/mobileorg/mobileorg.org")
+    (with-eval-after-load "org"
+      (add-hook 'org-mode-hook
+                (lambda ()
+                  (add-hook 'after-save-hook 'my-org-mobile-push-later nil t)))))
+
+#+END_SRC
+*** Automatically pull from MobileOrg
+Added on [2015-03-02 Mon 12:02].
+#+BEGIN_SRC emacs-lisp
+  (defun my-org-mobile-maybe-pull ()
+    (interactive)
+    (require 'org-mobile)
+    (let* ((capture-file (expand-file-name org-mobile-capture-file org-mobile-directory))
+           (attributes (file-attributes capture-file)))
+      (if (null attributes)
+          (warn "MobileOrg capture file `%s' not found" capture-file)
+        (when (> (nth 7 attributes) 1)
+          (org-mobile-pull)))))
+
+  ;; Check every five minutes (assuming we're on the right box)
+  (when (file-exists-p "~/Dropbox/mobileorg/mobileorg.org")
+    (run-with-timer 300 300 'my-org-mobile-maybe-pull))
+
+#+END_SRC
+
 * M-x ecd, to open eshell in the specified directory
 #+BEGIN_SRC emacs-lisp
   (defun ecd (d)
@@ -1137,12 +1229,6 @@ If there are unbound variables, ask for their values.
   (add-hook 'emacs-lisp-mode-hook 'pretty-lambdas)
   (add-hook 'lisp-mode-hook 'pretty-lambdas)
 #+end_src
-* Auto fill mode in org-capture mode
-Added on [2014-01-14 Tue 14:44].
-#+BEGIN_SRC emacs-lisp
-  (eval-after-load "org-capture"
-    '(add-hook 'org-capture-mode-hook 'turn-on-auto-fill))
-#+END_SRC
 * Convert Libreoffice document to PDF
 Added on [2013-06-14 Fri 20:15].
 #+BEGIN_SRC emacs-lisp
@@ -1260,18 +1346,6 @@ http://www.emacswiki.org/emacs/MultipleSMTPAccounts .
         (message "Using SMTP server %s:%s%s" smtpmail-smtp-server smtpmail-smtp-service
                  (if smtpmail-smtp-user (concat ", username " smtpmail-smtp-user) ""))
         ad-do-it)))
-#+END_SRC
-* Fix org-mode-line-clock
-  CLOCK: [2014-02-21 Fri 16:28]--[2014-02-21 Fri 16:58] =>  0:30
-Added on [2014-02-21 Fri 16:28].
-
-=org-mode-line-clock= is defined through =org-copy-face= as inheriting
-from =mode-line=.  However, that's not what I want, because it gets
-the "mode line active" face even in inactive buffers.
-#+BEGIN_SRC emacs-lisp
-  (eval-after-load "org-faces"
-    '(set-face-attribute 'org-mode-line-clock nil
-                         :inherit nil))
 #+END_SRC
 * Update mode line face on focus
 Added on [2014-02-21 Fri 16:45].
@@ -1476,80 +1550,6 @@ character range.
     (my-fix-emojis)
     (add-hook 'after-make-frame-functions 'my-fix-emojis))
 #+END_SRC
-* Automate MobileOrg push/pull
-** Push MobileOrg files asynchronously
-Added on [2015-03-02 Mon 09:34].
-
-This is somewhat annoying: after 60 seconds of idle time after saving
-an org-mode file, it blocks the entire Emacs session with agenda
-creation, copying etc.  I find it's better than the alternative, which
-is remembering to push manually.
-#+BEGIN_SRC emacs-lisp
-  (defun my-org-mobile-push-async ()
-    (interactive)
-    (async-start
-     `(lambda ()
-        (require 'org-mobile)
-        ,(async-inject-variables "org-\\(agenda-files\\|agenda-custom-commands\\|mobile\\)")
-        ,(async-inject-variables "\\`version-control\\'")
-        ;; Need to avoid prompting to delete old backups:
-        (setq delete-old-versions 'never)
-        ;; XXX: need to avoid queries about "stealing" unsaved org files
-        ;; XXX: is this the right way to do it?
-        (setq org-mobile-force-id-on-agenda-items nil)
-        (org-mobile-push)
-        ;; XXX: necessary?
-        ;; (save-some-buffers t)
-        )
-     (lambda (result)
-       (unless (equal result "Files for mobile viewer staged")
-         (warn "push result: %S" result)))))
-
-  ;; Let's do better than this:
-  ;; (with-eval-after-load "org"
-  ;;   (add-hook 'org-mode-hook
-  ;;             (lambda ()
-  ;;               (add-hook 'after-save-hook 'my-org-mobile-push-async nil t))))
-
-  (defvar my-org-mobile-push-timer nil)
-
-  (defun my-org-mobile-push-later ()
-    (interactive)
-    (unless my-org-mobile-push-timer
-      (setq my-org-mobile-push-timer
-            (run-with-idle-timer
-             60 nil
-             (lambda ()
-               (setq my-org-mobile-push-timer nil)
-               (let ((my-org-mobile-push-timer t))
-                 (org-mobile-push)))))))
-
-  (when (file-exists-p "~/Dropbox/mobileorg/mobileorg.org")
-    (with-eval-after-load "org"
-      (add-hook 'org-mode-hook
-                (lambda ()
-                  (add-hook 'after-save-hook 'my-org-mobile-push-later nil t)))))
-
-#+END_SRC
-** Automatically pull from MobileOrg
-Added on [2015-03-02 Mon 12:02].
-#+BEGIN_SRC emacs-lisp
-  (defun my-org-mobile-maybe-pull ()
-    (interactive)
-    (require 'org-mobile)
-    (let* ((capture-file (expand-file-name org-mobile-capture-file org-mobile-directory))
-           (attributes (file-attributes capture-file)))
-      (if (null attributes)
-          (warn "MobileOrg capture file `%s' not found" capture-file)
-        (when (> (nth 7 attributes) 1)
-          (org-mobile-pull)))))
-
-  ;; Check every five minutes (assuming we're on the right box)
-  (when (file-exists-p "~/Dropbox/mobileorg/mobileorg.org")
-    (run-with-timer 300 300 'my-org-mobile-maybe-pull))
-
-#+END_SRC
-
 * jabber.el hacks for specific servers				     :jabber:
 ** Hacks for jabber.el + Hipchat				    :hipchat:
 *** Mention someone in a Hipchat chat room
