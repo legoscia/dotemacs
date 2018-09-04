@@ -787,6 +787,40 @@ Added on [2018-06-15 Fri 14:31].
 
   (global-set-key (kbd "C-c e") 'my-print-erlang-term-in-region)
 #+END_SRC
+** Run Erlang/OTP test suites
+Added on [2018-09-04 Tue 09:49].
+
+As posted at http://erlang.org/pipermail/erlang-questions/2017-September/093311.html.
+#+BEGIN_SRC emacs-lisp
+  (defun my-erlang-otp-test-suites (otp-dir test-suites)
+    "Compile Erlang/OTP and run certain test suites.
+  OTP-DIR is the top-level directory of the Erlang/OTP source tree.
+  TEST-SUITES is a list of test suites to run.  The names should
+  follow the pattern \"foo_test/bar_SUITE\".  When called
+  interactively, there is completion for existing test suites."
+    (interactive
+     (let* ((otp-dir (expand-file-name (read-directory-name "Erlang/OTP source directory: " nil nil t)))
+	    (default-directory otp-dir))
+       (list
+	otp-dir
+	(completing-read-multiple
+	 "Test suites to run: "
+	 (mapcar
+	  (lambda (test-suite)
+	    (unless (string-match "^lib/\\([^/]+\\)/test/\\([^/]+\\)\\.erl$" test-suite)
+	      (error "unexpected test suite file %S"))
+	    (format "%s_test/%s" (match-string 1 test-suite) (match-string 2 test-suite)))
+	  (file-expand-wildcards "lib/*/test/*_SUITE.erl"))
+	 nil t))))
+    (let ((default-directory otp-dir))
+      (compile
+       (concat "make -j6 && "
+	       "./otp_build tests && "
+	       "cd release/tests && "
+	       "(cd test_server && ../../../bin/erl -s ts install -s init stop) &&"
+	       "../../bin/ct_run -pa ../../lib/common_test/test_server -suite "
+	       (mapconcat 'identity test-suites " ")))))
+#+END_SRC
 * Org-mode stuff
 ** Wrap in example tags
 Added on [2012-05-21 Mon 15:10].
