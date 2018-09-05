@@ -756,34 +756,40 @@ part of a group (or many groups).
 ** Print Erlang term in region
 Added on [2018-06-15 Fri 14:31].
 #+BEGIN_SRC emacs-lisp
+  (defun my-erlang-term-as-string (beg end)
+    (let ((filename (make-temp-file "erlang-term")))
+      (unwind-protect
+	  (progn
+	    (write-region beg end filename nil :silent)
+	    ;; add trailing dot if missing...
+	    (unless (= ?. (char-before end))
+	      (with-temp-buffer
+		(insert ".")
+		(write-region (point-min) (point-max) filename t :silent)))
+	    (with-temp-buffer
+	      (call-process
+	       "erl" nil t nil "-noshell" "-eval"
+	       (concat
+		"{ok, Term} = file:consult(\""
+		filename
+		"\"),\n"
+		"try iolist_size(Term) of _ -> io:format(\"~s\", [Term])\n"
+		"catch error:badarg -> io:format(\"~p\", [Term]) end")
+	       "-s" "init" "stop")
+	      (buffer-string)))
+	(delete-file filename))))
+
   (defun my-print-erlang-term-in-region (beg end)
     "Try to display the Erlang term in the region.
   If it's an iolist or a binary, just print it as a string.
   If it's any other term, print it with ~p format.
   Display the output in a buffer."
     (interactive "r")
-    (let ((filename (make-temp-file "erlang-term")))
-      (unwind-protect
-          (progn
-            (write-region beg end filename nil :silent)
-            ;; add trailing dot if missing...
-            (unless (= ?. (char-before end))
-              (with-temp-buffer
-                (insert ".")
-                (write-region (point-min) (point-max) filename t :silent)))
-            (with-current-buffer (get-buffer-create "*erlang-term*")
-              (erase-buffer)
-              (call-process
-               "erl" nil t nil "-noshell" "-eval"
-               (concat
-                "{ok, Term} = file:consult(\""
-                filename
-                "\"),\n"
-                "try iolist_size(Term) of _ -> io:format(\"~s\", [Term])\n"
-                "catch error:badarg -> io:format(\"~p\", [Term]) end")
-               "-s" "init" "stop")
-              (display-buffer (current-buffer))))
-        (delete-file filename))))
+    (let ((term-as-string (my-erlang-term-as-string beg end)))
+      (with-current-buffer (get-buffer-create "*erlang-term*")
+	(erase-buffer)
+	(insert term-as-string)
+	(display-buffer (current-buffer)))))
 
   (global-set-key (kbd "C-c e") 'my-print-erlang-term-in-region)
 #+END_SRC
