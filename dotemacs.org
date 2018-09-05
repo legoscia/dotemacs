@@ -185,7 +185,7 @@ Also s-', if s-a is taken by the window manager:
   (global-set-key (kbd "s-<kp-begin>") 'browse-url-firefox)
   (global-set-key (kbd "s-t") 'browse-url-firefox)
 #+END_SRC
-** EMMS key bindings
+** EMMS key bindings                                                   :emms:
 #+BEGIN_SRC emacs-lisp
   (global-set-key [Scroll_Lock] 'emms-pause)
   (global-set-key (kbd "<S-Scroll_Lock>") 'emms-next)
@@ -2237,7 +2237,7 @@ let's take out =gcov-called-line= from
     (setq compilation-error-regexp-alist
 	  (delq 'gcov-called-line compilation-error-regexp-alist)))
 #+END_SRC
-* Match Elixir errors in compilation output
+* Match Elixir errors in compilation output                          :elixir:
 Added on [2018-07-27 Fri 13:39].
 
 E.g.:
@@ -2269,7 +2269,7 @@ E.g.:
      )))
   (add-to-list 'compilation-error-regexp-alist 'elixir-error)
 #+END_SRC
-* Fold elixir imenu menus
+* Fold elixir imenu menus                                            :elixir:
 Added on [2018-07-27 Fri 17:24].
 
 When using imenu in an Elixir buffer, elixir-mode helpfully splits the
