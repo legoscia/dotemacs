@@ -2168,14 +2168,15 @@ Let's try to work around that.
 
 #+BEGIN_SRC emacs-lisp
   (defun my-proced-maybe (oldfun &rest args)
+    "Don't wipe filters etc if Proced buffer exists but is empty."
     (let ((buffer (get-buffer "*Proced*")))
       (if (or (not (bufferp buffer))
-              (not (eq 'proced-mode (buffer-local-value 'major-mode buffer))))
-          ;; Let `proced' do its thing
-          (apply oldfun args)
-        ;; Pop to existing proced buffer, and update without reverting
-        (pop-to-buffer buffer)
-        (proced-update t))))
+	      (not (eq 'proced-mode (buffer-local-value 'major-mode buffer))))
+	  ;; Let `proced' do its thing
+	  (apply oldfun args)
+	;; Pop to existing proced buffer, and update without reverting
+	(pop-to-buffer buffer)
+	(proced-update t))))
 
   (with-eval-after-load "proced"
     (advice-add 'proced :around 'my-proced-maybe))
