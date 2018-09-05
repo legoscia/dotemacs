@@ -821,6 +821,19 @@ As posted at http://erlang.org/pipermail/erlang-questions/2017-September/093311.
 	       "../../bin/ct_run -pa ../../lib/common_test/test_server -suite "
 	       (mapconcat 'identity test-suites " ")))))
 #+END_SRC
+** Disable =edts-mode= when there is no file name
+Added on [2017-09-27 Wed 17:41].
+
+When opening an Erlang source block in org-mode, edts-mode fails to
+start because =buffer-file-name= returns nil.  Let's check for that:
+
+#+BEGIN_SRC emacs-lisp
+  (defun my-buffer-has-file-name-p (&rest _ignored)
+    (not (null (buffer-file-name))))
+
+  (with-eval-after-load "edts-mode"
+    (advice-add 'edts-mode :before-while 'my-buffer-has-file-name-p))
+#+END_SRC
 * Org-mode stuff
 ** Wrap in example tags
 Added on [2012-05-21 Mon 15:10].
@@ -2072,19 +2085,6 @@ directory.
       (call-interactively 'compile)))
 
   (global-set-key (kbd "ESC <f12>") 'my-compile-in-same-directory)
-#+END_SRC
-* Disable =edts-mode= when there is no file name
-Added on [2017-09-27 Wed 17:41].
-
-When opening an Erlang source block in org-mode, edts-mode fails to
-start because =buffer-file-name= returns nil.  Let's check for that:
-
-#+BEGIN_SRC emacs-lisp
-  (defun my-buffer-has-file-name-p (&rest _ignored)
-    (not (null (buffer-file-name))))
-
-  (with-eval-after-load "edts-mode"
-    (advice-add 'edts-mode :before-while 'my-buffer-has-file-name-p))
 #+END_SRC
 * Require gnus-icalendar
 Added on [2017-11-06 Mon 14:39].
