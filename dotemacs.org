@@ -2237,6 +2237,24 @@ let's take out =gcov-called-line= from
     (setq compilation-error-regexp-alist
 	  (delq 'gcov-called-line compilation-error-regexp-alist)))
 #+END_SRC
+
+How to find which entry caused the false match?  Put point at the
+beginning of the line you don't want to match, and run:
+
+#+BEGIN_EXAMPLE
+  (dolist (x compilation-error-regexp-alist)
+    (when (looking-at-p (cadr (assq x compilation-error-regexp-alist-alist)))
+      (error "it's %s" x)))
+#+END_EXAMPLE
+
+In Emacs 25, we also need to take out =guile-line=:
+
+#+BEGIN_SRC emacs-lisp
+  (with-eval-after-load "compile"
+    (setq compilation-error-regexp-alist
+	  (delq 'guile-line compilation-error-regexp-alist)))
+#+END_SRC
+
 * Match Elixir errors in compilation output                          :elixir:
 Added on [2018-07-27 Fri 13:39].
 
