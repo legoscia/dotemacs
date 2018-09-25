@@ -2264,6 +2264,9 @@ E.g.:
   ,** (CompileError) lib/foo.ex:42: this is wrong
 #+END_EXAMPLE
 
+Also handle Credo error messages, which start with U+2503, "BOX
+DRAWINGS HEAVY VERTICAL" and include a column number.
+
 #+BEGIN_SRC emacs-lisp
   (setq compilation-error-regexp-alist-alist
 	(delq (assq 'elixir-error compilation-error-regexp-alist-alist)
@@ -2273,13 +2276,13 @@ E.g.:
    (cons
     'elixir-error
     (list
-     "^\\*\\* ([^)]+) \\([^ :]+\\):\\([0-9]+\\):"
+     "^\\(?:\\*\\*\\ ([^)]+) \\|\u2503 +\\)\\([^ :]+\\):\\([0-9]+\\):\\([0-9]+\\)?"
      ;; file
      1
      ;; line
      2
      ;; column
-     nil
+     3
      ;; type
      2
      ;; hyperlink
