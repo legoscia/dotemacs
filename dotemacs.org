@@ -2268,6 +2268,15 @@ E.g.:
 Also handle Credo error messages, which start with U+2503, "BOX
 DRAWINGS HEAVY VERTICAL" and include a column number.
 
+Also handle stacktrace entries:
+
+#+BEGIN_EXAMPLE
+      (library_name) path/to/foo.ex:42: ModuleName.function_name/1
+#+END_EXAMPLE
+
+Ignoring the library name for now, but we could perhaps use that to
+find functions in other source trees.
+
 #+BEGIN_SRC emacs-lisp
   (setq compilation-error-regexp-alist-alist
 	(delq (assq 'elixir-error compilation-error-regexp-alist-alist)
@@ -2277,7 +2286,7 @@ DRAWINGS HEAVY VERTICAL" and include a column number.
    (cons
     'elixir-error
     (list
-     "^\\(?:\\*\\*\\ ([^)]+) \\|\u2503 +\\)\\([^ :]+\\):\\([0-9]+\\):\\([0-9]+\\)?"
+     "^\\(?:\\*\\*\\ ([^)]+) \\|\u2503 +\\| +([A-Za-z_]+) \\)\\([^ :]+\\):\\([0-9]+\\):\\([0-9]+\\)?"
      ;; file
      1
      ;; line
@@ -2291,6 +2300,7 @@ DRAWINGS HEAVY VERTICAL" and include a column number.
      )))
   (add-to-list 'compilation-error-regexp-alist 'elixir-error)
 #+END_SRC
+
 * Fold elixir imenu menus                                            :elixir:
 Added on [2018-07-27 Fri 17:24].
 
