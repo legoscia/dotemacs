@@ -2272,6 +2272,7 @@ Also handle stacktrace entries:
 
 #+BEGIN_EXAMPLE
       (library_name) path/to/foo.ex:42: ModuleName.function_name/1
+      (for doctest at) path/to/foo.ex:42: (test)
 #+END_EXAMPLE
 
 Ignoring the library name for now, but we could perhaps use that to
@@ -2286,7 +2287,7 @@ find functions in other source trees.
    (cons
     'elixir-error
     (list
-     "^\\(?:\\*\\*\\ ([^)]+) \\|\u2503 +\\| +([A-Za-z_]+) \\)\\([^ :]+\\):\\([0-9]+\\):\\([0-9]+\\)?"
+     "^\\(?:\\*\\*\\ ([^)]+) \\|\u2503 +\\| +([A-Za-z_ ]+) \\)\\([^ :]+\\):\\([0-9]+\\):\\([0-9]+\\)?"
      ;; file
      1
      ;; line
