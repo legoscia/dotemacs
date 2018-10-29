@@ -1935,7 +1935,9 @@ Added on [2016-06-28 Tue 13:47].
   (require 'subr-x)
 
   (defun my-compilation-save-output (buffer status)
-    (make-directory my-compilation-archive-dir t)
+    (with-file-modes #o700
+      (make-directory my-compilation-archive-dir t))
+    (setq status (string-trim-right status))
     (let ((output-file (expand-file-name
                         (concat (format-time-string "%F-%T")
                                 my-compilation-archive-compression-suffix)
@@ -1943,10 +1945,10 @@ Added on [2016-06-28 Tue 13:47].
       (condition-case e
           (with-current-buffer buffer
             (write-region (point-min) (point-max) output-file nil :silent)
-            (message "Compilation %s, output saved in %s" (string-trim-right status) output-file))
+            (message "Compilation %s, output saved in %s" status output-file))
         (error
          (message "Compilation %s, failed to save output in %s: %s"
-                  (string-trim-right status) output-file (error-message-string e))))))
+                  status output-file (error-message-string e))))))
 
   (with-eval-after-load "compile"
     (add-hook 'compilation-finish-functions 'my-compilation-save-output))
