@@ -1,3 +1,5 @@
+# -*- indent-tabs-mode: nil; -*-
+
 Load this file with:
 
 : (require 'org-loaddefs)
