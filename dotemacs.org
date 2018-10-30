@@ -1850,6 +1850,7 @@ Added on [2015-08-21 Fri 12:47].
                ("color-identifiers-mode" color-identifiers-mode "色")
                ("autorevert" auto-revert-mode "♻")
                ("ivy" ivy-mode "")
+               ("simple" auto-fill-function "⮰")
                ))
     (pcase-let ((`(,module ,mode ,new-lighter) x))
       (eval-after-load module
