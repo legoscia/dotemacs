@@ -2261,7 +2261,7 @@ In Emacs 25, we also need to take out =guile-line=:
 	  (delq 'guile-line compilation-error-regexp-alist)))
 #+END_SRC
 
-* Match Elixir errors in compilation output                          :elixir:
+* Match Elixir errors and warnings in compilation output             :elixir:
 Added on [2018-07-27 Fri 13:39].
 
 E.g.:
@@ -2305,6 +2305,37 @@ find functions in other source trees.
      nil
      )))
   (add-to-list 'compilation-error-regexp-alist 'elixir-error)
+#+END_SRC
+
+Let's handle warnings as well:
+
+#+BEGIN_EXAMPLE
+warning: variable "conn" is unused
+  lib/api.ex:25
+#+END_EXAMPLE
+
+#+BEGIN_SRC emacs-lisp
+  (setq compilation-error-regexp-alist-alist
+        (delq (assq 'elixir-warning compilation-error-regexp-alist-alist)
+              compilation-error-regexp-alist-alist))
+  (add-to-list
+   'compilation-error-regexp-alist-alist
+   (cons
+    'elixir-warning
+    (list
+     "^warning: .*\n  \\(\\([^[:space:]:]+\\):\\([0-9]+\\)\\)"
+     ;; file
+     2
+     ;; line
+     3
+     ;; column
+     nil
+     ;; type
+     1
+     ;; hyperlink
+     1
+     )))
+  (add-to-list 'compilation-error-regexp-alist 'elixir-warning)
 #+END_SRC
 
 * Fold elixir imenu menus                                            :elixir:
