@@ -2375,3 +2375,19 @@ not very useful, so let's filter out those.
     (advice-add 'package-menu--find-upgrades :filter-return
 		'my-filter-upgrades-requiring-newer-emacs))
 #+END_SRC
+* In Magit, unhide recent commits by default
+Added on [2019-01-07 Mon 14:23].
+
+I like seeing a list of recent commits when opening a new Magit status
+buffer.  By default, the "Recent commits" section is collapsed.  Let's
+change that:
+
+#+BEGIN_SRC emacs-lisp
+  (defun my-magit-unhide-recent-commits (section)
+    ;; Not sure why "Recent commits" is 'unpushed' - they may or may not be.
+    (when (eq 'unpushed (caar (magit-section-ident section)))
+      'show))
+
+  (with-eval-after-load "magit-section"
+    (add-hook 'magit-section-set-visibility-hook 'my-magit-unhide-recent-commits))
+#+END_SRC
