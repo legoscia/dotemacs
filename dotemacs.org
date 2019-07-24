@@ -2402,3 +2402,30 @@ They have really long lines, which make Emacs slow.
 (with-eval-after-load "grep"
   (push "*.js.map" grep-find-ignored-files))
 #+END_SRC
+* Link to JIRA ticket in commit messages
+Added on [2019-04-04 Thu 17:45].
+
+I like to put the JIRA issue id in the CATEGORY property of the task I
+clock to.  Let's use that to automatically insert it into commit
+messages.
+
+#+BEGIN_SRC emacs-lisp
+  (defun my-insert-category-if-looks-like-issue-id ()
+    (let* ((clock-buffer (and (markerp org-clock-marker) (marker-buffer org-clock-marker)))
+           (category
+            (when clock-buffer
+              (with-current-buffer clock-buffer
+                (save-excursion (goto-char org-clock-marker) (org-get-category))))))
+      (when (and category
+                 (string-match-p "^[A-Z]+-[0-9]+$" category)
+                 ;; Only insert the string if the commit message is
+                 ;; empty - skip if amending a commit
+                 (save-excursion
+                   (goto-char (point-min))
+                   (looking-at-p "\n*#")))
+        (save-excursion
+          (insert "\n\nTowards " category ".\n")))))
+
+  (with-eval-after-load "git-commit"
+    (add-hook 'git-commit-setup-hook 'my-insert-category-if-looks-like-issue-id))
+#+END_SRC
