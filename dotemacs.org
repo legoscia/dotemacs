@@ -2393,3 +2393,12 @@ change that:
   (with-eval-after-load "magit-section"
     (add-hook 'magit-section-set-visibility-hook 'my-magit-unhide-recent-commits))
 #+END_SRC
+* Exclude Javascript map files in rgrep
+Added on [2019-04-04 Thu 15:09].
+
+They have really long lines, which make Emacs slow.
+
+#+BEGIN_SRC emacs-lisp
+(with-eval-after-load "grep"
+  (push "*.js.map" grep-find-ignored-files))
+#+END_SRC
