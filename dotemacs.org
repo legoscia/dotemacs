@@ -2429,3 +2429,72 @@ messages.
   (with-eval-after-load "git-commit"
     (add-hook 'git-commit-setup-hook 'my-insert-category-if-looks-like-issue-id))
 #+END_SRC
+* Input method for pinyin with tone marks
+Added on [2019-05-20 Mon 15:34].
+#+BEGIN_SRC emacs-lisp
+  (quail-define-package
+   "pinyin-postfix" "" "PY<" t
+   "Pinyin input method"
+   nil t nil nil nil nil nil nil nil nil t)
+
+  (quail-define-rules
+   ("uu" ?ü)
+
+   ("a1" ?ā)
+   ("e1" ?ē)
+   ("i1" ?ī)
+   ("o1" ?ō)
+   ("u1" ?ū)
+   ("uu1" ?ǖ)
+
+   ("a2" ?á)
+   ("e2" ?é)
+   ("i2" ?í)
+   ("o2" ?ó)
+   ("u2" ?ú)
+   ("uu2" ?ǘ)
+
+   ("a3" ?ǎ)
+   ("e3" ?ě)
+   ("i3" ?ǐ)
+   ("o3" ?ǒ)
+   ("u3" ?ǔ)
+   ("uu3" ?ǚ)
+
+   ("a4" ?à)
+   ("e4" ?è)
+   ("i4" ?ì)
+   ("o4" ?ò)
+   ("u4" ?ù)
+   ("uu4" ?ǜ)
+
+   ("UU" ?Ü)
+
+   ("A1" ?Ā)
+   ("E1" ?Ē)
+   ("I1" ?Ī)
+   ("O1" ?Ō)
+   ("U1" ?Ū)
+   ("UU1" ?Ǖ)
+
+   ("A2" ?Á)
+   ("E2" ?É)
+   ("I2" ?Í)
+   ("O2" ?Ó)
+   ("U2" ?Ú)
+   ("UU2" ?Ǘ)
+
+   ("A3" ?Ǎ)
+   ("E3" ?Ě)
+   ("I3" ?Ǐ)
+   ("O3" ?Ǒ)
+   ("U3" ?Ǔ)
+   ("UU3" ?Ǚ)
+
+   ("A4" ?À)
+   ("E4" ?È)
+   ("I4" ?Ì)
+   ("O4" ?Ò)
+   ("U4" ?Ù)
+   ("UU4" ?Ǜ))
+#+END_SRC
