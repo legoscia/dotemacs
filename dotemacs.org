@@ -1831,11 +1831,13 @@ From [[http://stackoverflow.com/a/3883375/113848][this answer]] by [[http://stac
 * s-w to copy path of current file
 Added on [2015-06-02 Tue 14:53].
 #+BEGIN_SRC emacs-lisp
+  (require 'subr-x)
+
   (defun my-copy-file-name ()
     (interactive)
-    (if buffer-file-name
+    (if-let ((name (or buffer-file-name dired-directory)))
         (progn
-          (kill-new buffer-file-name)
+          (kill-new name)
           (message "Copied file name to kill ring"))
       (user-error "Current buffer not associated with a file")))
   (global-set-key (kbd "s-w") 'my-copy-file-name)
