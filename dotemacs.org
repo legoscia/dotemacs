@@ -2498,3 +2498,18 @@ Added on [2019-05-20 Mon 15:34].
    ("U4" ?Ù)
    ("UU4" ?Ǜ))
 #+END_SRC
+* Replace control characters with control pictures in region
+Added on [2019-09-12 Thu 09:56].
+
+Unicode "Control Pictures" block, U+2400 to U+241F (and also U+2420 to
+U+2426, but I'm not interested in them here).
+
+#+BEGIN_SRC emacs-lisp
+  (defun my-substitute-unicode-control-pictures (beg end)
+    (interactive "*r")
+    (save-excursion
+      (goto-char beg)
+      (while (search-forward-regexp "[\000-\011\013-\037]" end t)
+        (setf (buffer-substring (match-beginning 0) (match-end 0))
+              (+ #x2400 (char-after (match-beginning 0)))))))
+#+END_SRC
