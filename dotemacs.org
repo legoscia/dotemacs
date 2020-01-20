@@ -2513,3 +2513,37 @@ U+2426, but I'm not interested in them here).
         (setf (buffer-substring (match-beginning 0) (match-end 0))
               (+ #x2400 (char-after (match-beginning 0)))))))
 #+END_SRC
+* Link Terraform error messages in compilation output
+Added on [2019-10-07 Mon 08:32].
+
+E.g:
+#+begin_example
+Error: Reference to undeclared input variable
+
+  on ../../../terraform-foo/bar.tf line 36, in resource "aws_lb_target_group" "foo":
+#+end_example
+
+
+#+BEGIN_SRC emacs-lisp
+  (setq compilation-error-regexp-alist-alist
+        (delq (assq 'terraform-error compilation-error-regexp-alist-alist)
+              compilation-error-regexp-alist-alist))
+  (add-to-list
+   'compilation-error-regexp-alist-alist
+   (cons
+    'terraform-error
+    (list
+     "  on \\(\\([^ :]+\\) line \\([0-9]+\\)\\),"
+     ;; file
+     2
+     ;; line
+     3
+     ;; column
+     nil
+     ;; type
+     2
+     ;; hyperlink
+     1
+     )))
+  (add-to-list 'compilation-error-regexp-alist 'terraform-error)
+#+END_SRC
