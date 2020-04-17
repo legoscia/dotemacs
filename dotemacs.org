@@ -1932,9 +1932,10 @@ Added on [2016-06-28 Tue 13:47].
 #+BEGIN_SRC emacs-lisp
   ;; On some systems, /tmp is automatically cleaned up periodically.
   ;; For the others - we compress the output, so maybe it's not so bad?
-  (defvar my-compilation-archive-dir "/tmp/compilations")
+  (defvar my-compilation-archive-dir (concat "/tmp/compilations-" (user-login-name)))
 
-  (defvar my-compilation-archive-compression-suffix ".xz")
+  (defvar my-compilation-archive-compression-suffix
+    (if (executable-find "xz") ".xz" ".gz"))
 
   ;; for string-trim-right
   (require 'subr-x)
