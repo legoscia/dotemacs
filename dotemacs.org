@@ -2574,4 +2574,14 @@ can catch.
              old-regexp t t)))
       (setf (cadr gnu-entry) new-regexp)))
 #+END_SRC
+* Don't scroll to bottom on output in erlang shell mode
+Added on [2020-03-30 Mon 17:41].
 
+It's annoying when I'm looking at something further up while new
+output is arriving.
+#+BEGIN_SRC emacs-lisp
+  (with-eval-after-load "erlang"
+    (add-hook 'erlang-shell-mode-hook
+              (lambda ()
+                (setq-local comint-move-point-for-output nil))))
+#+END_SRC
