@@ -2585,3 +2585,23 @@ output is arriving.
               (lambda ()
                 (setq-local comint-move-point-for-output nil))))
 #+END_SRC
+* Encode region as QR code
+Added on [2020-04-06 Mon 12:13].
+
+Need to transfer a piece of text from Emacs to a smartphone?  Encode
+it as a QR code and scan it.
+
+Requires qrencode from https://fukuchi.org/works/qrencode/
+#+BEGIN_SRC emacs-lisp
+  (defun my-qr-encode (beg end)
+    (interactive "r")
+    (let ((text (buffer-substring-no-properties beg end))
+          (default-process-coding-system '(binary . utf-8)))
+      (with-temp-buffer
+        (unless (zerop (call-process "qrencode" nil t nil "-o" "-" "--" text))
+          (error "qrencode failed: %s" (buffer-string)))
+        (let ((image (create-image (string-as-unibyte (buffer-string)) 'png t)))
+          (with-current-buffer (get-buffer-create "qr-code")
+            (insert-image image)
+            (display-buffer (current-buffer)))))))
+#+END_SRC
