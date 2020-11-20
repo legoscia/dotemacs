@@ -2605,3 +2605,18 @@ Requires qrencode from https://fukuchi.org/works/qrencode/
             (insert-image image)
             (display-buffer (current-buffer)))))))
 #+END_SRC
+* Remove stale marks from =tempo-marks=
+Added on [2020-08-11 Tue 10:15].
+
+Sometimes when using org-mode "Structure Templates", expanding a
+string such as =<e= fails with the error "Marker does not point
+anywhere".  Let's fix that by removing such markers from
+=tempo-marks=.
+
+#+BEGIN_SRC emacs-lisp
+  (defun my-fix-tempo-marks (&rest _ignore)
+    (setq tempo-marks (cl-remove-if-not 'marker-buffer tempo-marks)))
+
+  (with-eval-after-load "tempo"
+    (advice-add 'tempo-insert-mark :before 'my-fix-tempo-marks))
+#+END_SRC
