@@ -174,10 +174,6 @@ Also s-', if s-a is taken by the window manager:
 #+BEGIN_SRC emacs-lisp
   (global-set-key "\C-cl" 'org-store-link)
 #+END_SRC
-** Bind s-l to find-library
-#+BEGIN_SRC emacs-lisp
-  (global-set-key [(super l)] 'find-library)
-#+END_SRC
 ** Bind C-c f to find-function
 #+BEGIN_SRC emacs-lisp
   (global-set-key (kbd "C-c f") 'find-function)
