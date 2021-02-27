@@ -1846,7 +1846,8 @@ Added on [2015-08-21 Fri 12:47].
                ("org-capture" org-capture-mode "覚")
                ("view" view-mode "見")
                ("minimap" minimap-mode "小図")
-               ("compile" compilation-in-progress "変換")
+               ;; compilation-in-progress is in mode-line-modes as of Emacs 27
+               ;;("compile" compilation-in-progress "変換")
                ("color-identifiers-mode" color-identifiers-mode "色")
                ("autorevert" auto-revert-mode "♻")
                ("ivy" ivy-mode "")
