@@ -87,7 +87,7 @@ implementation here.
   (add-to-list 'org-capture-templates '("n" "Note" entry (clock) "* %^{Note title} %T\n%?"))
   (add-to-list 'org-capture-templates '("4" "New activity" entry (function my-org-capture-current-file) "* %^{New activity}\n%?\n%a" :prepend t :clock-in t))
   (add-to-list 'org-capture-templates '("t" "New TODO task" entry (function my-org-capture-current-file) "* TODO %^{New task}\nSCHEDULED: %t\n%?\n%a" :prepend t))
-  (add-to-list 'org-capture-templates '("e" "dotemacs" entry (file "~/dotemacs/dotemacs.org") "* %^{dotemacs snippet titled}\nAdded on %U.\n#+BEGIN_SRC emacs-lisp\n  %?\n#+END_SRC" :unnarrowed))
+  (add-to-list 'org-capture-templates '("e" "dotemacs" entry (file "~/dotemacs/dotemacs.org") "* %^{dotemacs snippet titled}\nAdded on %U.\n#+BEGIN_SRC emacs-lisp\n  %?\n#+END_SRC" :unnarrowed t))
   (add-to-list 'org-capture-templates '("E" "Key binding for dotemacs" entry (file "~/dotemacs/dotemacs.org") (function my-org-dotemacs-key-binding)))
   (add-to-list 'org-capture-templates '("l" "List item from active region" item (clock) "- %i\n" :immediate-finish t))
   (global-set-key [f8] 'org-capture)
