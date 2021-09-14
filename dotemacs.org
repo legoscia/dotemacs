@@ -2337,6 +2337,41 @@ warning: variable "conn" is unused
      )))
   (add-to-list 'compilation-error-regexp-alist 'elixir-warning)
 #+END_SRC
+** Remove leading space from file name
+Added on [2021-09-14 Tue 16:43].
+
+For some reason, in Elixir stack traces the file name includes one or
+more leading spaces.  For example:
+
+#+begin_src compilation
+  -*- mode: compilation; default-directory: "/tmp/" -*-
+  Compilation started at Tue Sep 14 16:44:31
+
+  elixir foo.ex
+  warning: no clause will ever match
+    foo.ex:5
+
+  ,** (MatchError) no match of right hand side value: :b
+      foo.ex:5: Foo.foo/0
+      (elixir) lib/code.ex:767: Code.require_file/2
+
+  Compilation exited abnormally with code 1 at Tue Sep 14 16:44:31
+
+#+end_src
+
+In the above, it would try to open the file ="\s\s\s\sfoo.ex"=.
+
+Not sure why this happens, or how to fix it properly, so let's work
+around it.
+
+#+begin_src emacs-lisp
+  (defun my-trim-compilation-file-name (args)
+    (setf (nth 1 args) (string-trim-left (nth 1 args)))
+    args)
+
+  (with-eval-after-load "compile"
+    (advice-add 'compilation-find-file :filter-args 'my-trim-compilation-file-name))
+#+end_src
 
 * Fold elixir imenu menus                                            :elixir:
 Added on [2018-07-27 Fri 17:24].
