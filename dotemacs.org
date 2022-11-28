@@ -1898,7 +1898,7 @@ Files with extension =.md= are usually using Github-Flavoured
 Markdown.  Let's treat them as such.
 #+BEGIN_SRC emacs-lisp
   (with-eval-after-load "markdown-mode"
-    (setf (cdr (assoc "\\.md\\'" auto-mode-alist)) 'gfm-mode))
+    (setf (cdr (assoc "\\.\\(?:md\\|markdown\\|mkd\\|mdown\\|mkdn\\|mdwn\\)\\'" auto-mode-alist)) 'gfm-mode))
 #+END_SRC
 * Set =show-trailing-whitespace= in programming modes
 Added on [2016-04-06 Wed 15:00].
