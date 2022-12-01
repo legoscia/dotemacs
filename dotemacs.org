@@ -2534,17 +2534,24 @@ Added on [2019-05-20 Mon 15:34].
 * Replace control characters with control pictures in region
 Added on [2019-09-12 Thu 09:56].
 
-Unicode "Control Pictures" block, U+2400 to U+241F (and also U+2420 to
-U+2426, but I'm not interested in them here).
+Unicode "Control Pictures" block, U+2400 to U+241F, plus U+2421 for DEL
+(and also U+2420 and U+2423 to U+2426, but I'm not interested in them here).
 
 #+BEGIN_SRC emacs-lisp
   (defun my-substitute-unicode-control-pictures (beg end)
     (interactive "*r")
     (save-excursion
       (goto-char beg)
-      (while (search-forward-regexp "[\000-\011\013-\037]" end t)
+      (while (search-forward-regexp "[\000-\011\013-\037\177]" end t)
         (setf (buffer-substring (match-beginning 0) (match-end 0))
-              (+ #x2400 (char-after (match-beginning 0)))))))
+              (pcase (char-after (match-beginning 0))
+                (#o177
+                 ;; Special case for Delete
+                 #x2421)
+                (c
+                 ;; All other control characters have a single offset
+                 ;; to their respective control picture
+                 (+ c #x2400)))))))
 #+END_SRC
 * Link Terraform error messages in compilation output
 Added on [2019-10-07 Mon 08:32].
