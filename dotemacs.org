@@ -902,6 +902,43 @@ directly opening a data URI containing the exported HTML.
                         t))))
           (browse-url data-uri)))))
 #+END_SRC
+** Add org HTML export command for copying to clipboard
+Added on [2023-06-02 Fri 18:27].
+
+Can be pasted into various GUI applications.
+
+Note that the xclip referenced below comes from this pull request:
+https://github.com/astrand/xclip/pull/142
+
+It accepts the =alt-text= argument. The mentioned various GUI
+applications don't like to paste HTML if there is no plain string on
+the clipboard at the same time, even though they completely ignore
+what the plain string is.
+
+#+BEGIN_SRC emacs-lisp
+  (with-eval-after-load "ox-html"
+    (let* ((ox-html-backend (org-export-get-backend 'html))
+           (menu (org-export-backend-menu ox-html-backend))
+           (sub-entries (cl-third menu)))
+      (nconc sub-entries
+             (list (list ?c "Copy HTML-formatted text to clipboard" 'my-org-html-export-clipboard)))))
+
+  (defun my-org-html-export-clipboard (&optional async subtreep visible-only body-only ext-plist)
+    (interactive)
+    (let ((org-buffer (current-buffer)))
+      (with-temp-buffer
+        (let ((temp-buffer (current-buffer)))
+          (with-current-buffer org-buffer
+            (org-export-to-buffer 'html temp-buffer
+              async subtreep visible-only body-only ext-plist
+              (lambda () (set-auto-mode t)))))
+        (let ((process (make-process :name "xclip"
+                                     :buffer "xclip-output"
+                                     :command '("~/src/xclip/xclip" "-alt-text" "missingtext" "-t" "text/html" "-selection" "clipboard" "-verbose")
+                                     :connection-type 'pipe)))
+          (process-send-string process (buffer-string))
+          (process-send-eof process)))))
+#+END_SRC
 ** Theme for org html export
 Added on [2017-09-27 Wed 17:17].
 
