@@ -2696,3 +2696,19 @@ anywhere".  Let's fix that by removing such markers from
   (with-eval-after-load "tempo"
     (advice-add 'tempo-insert-mark :before 'my-fix-tempo-marks))
 #+END_SRC
+* Note how long ob-http requests take
+Added on [2020-12-17 Thu 11:01].
+
+#+BEGIN_SRC emacs-lisp
+  (with-eval-after-load "ob-http"
+    (define-advice org-babel-execute:http (:around (oldfun &rest r) request-time)
+      (let ((start (current-time)))
+        (prog1
+            (apply oldfun r)
+          (let* ((end (current-time))
+                 (diff (float-time (time-subtract end start))))
+            (with-current-buffer (get-buffer-create "*curl commands history*")
+              (goto-char (point-max))
+              (insert (format "# Took %f seconds\n" diff))))))))
+
+#+end_src
