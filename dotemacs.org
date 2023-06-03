@@ -223,6 +223,12 @@ See https://github.com/winterTTr/ace-jump-mode/
 (define-key global-map (kbd "s-SPC") 'ace-jump-mode)
 #+END_SRC
 
+And also =s-;=, as =s-SPC= is "switch keyboard layout" in Ubuntu:
+
+#+BEGIN_SRC emacs-lisp
+(define-key global-map (kbd "s-;") 'ace-jump-mode)
+#+END_SRC
+
 ** s-r is rgrep
 #+BEGIN_SRC emacs-lisp
 (define-key global-map (kbd "s-r") 'rgrep)
