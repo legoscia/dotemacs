@@ -2761,3 +2761,34 @@ Added on [2023-05-12 Fri 19:32].
   ;; Let's update calendars at startup
   (my-diary-from-icalendar-urls)
 #+END_SRC
+* Create Github pull request for current branch
+Added on [2023-06-08 Thu 14:30].
+
+Or rather, open a web browser on the right page to create a pull request.
+
+#+BEGIN_SRC emacs-lisp
+  (defvar my-github-repo-pull-request-label nil
+    "Alist of Github repo URLs to pull request labels.
+  Used by `my-github-create-pull-request'.  If the URL of the
+  Github repository is equal to the car of an entry in this alist,
+  suggest the cdr as pull request label.")
+
+  (defun my-github-create-pull-request ()
+    (interactive)
+    (let* ((remote-url (string-trim (shell-command-to-string "git config --get remote.origin.url")))
+           (branch-name (string-trim (shell-command-to-string "git branch --show-current")))
+           label)
+      (when (string-match "^git@github\\.com:\\(.*\\)\\.git$" remote-url)
+        (setq remote-url (concat "https://github.com/" (match-string 1 remote-url))))
+      (when (string-match "^\\(https://github.com/.*\\)\\.git$" remote-url)
+        ;; strip trailing ".git" in HTTPS URLs
+        (setq remote-url (match-string 1 remote-url)))
+      (setq label (cdr (assoc remote-url my-github-repo-pull-request-label)))
+      (unless (string-prefix-p "https://github.com/" remote-url)
+        (user-error "URL for \"origin\" remote is not a Github HTTPS URL: %S" remote-url))
+      (browse-url (format "%s/compare/%s?quick_pull=1%s" remote-url branch-name
+                          (if label (concat "&labels=" label) "")))))
+
+  ;; Similar to the key binding for `browse-at-remote' above
+  (global-set-key (kbd "C-c B") 'my-github-create-pull-request)
+#+END_SRC
