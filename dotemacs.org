@@ -2718,3 +2718,46 @@ Added on [2020-12-17 Thu 11:01].
               (insert (format "# Took %f seconds\n" diff))))))))
 
 #+end_src
+* Update diary from icalendar URL
+Added on [2023-05-12 Fri 19:32].
+#+BEGIN_SRC emacs-lisp
+  (defcustom my-diary-from-icalendar-urls ()
+    "URLs to fetch iCalendar files to update diary with from.
+  This is an alist, where the keys are short identifiers used as file names,
+  and the values are the URLs to fetch files from."
+    :type '(alist :key-type string :value-type string))
+
+  ;; Ensure that you have #include "~/.emacs.d/foo.diary" in your diary file
+
+  (defun my-diary-from-icalendar-urls ()
+    (interactive)
+    (dolist (entry my-diary-from-icalendar-urls)
+      (let* ((name (car entry))
+             (url (cdr entry))
+             (icalendar-file (expand-file-name (concat name ".icalendar") user-emacs-directory))
+             (icalendar-etag-file (expand-file-name (concat name ".icalendar.etag") user-emacs-directory))
+             (diary-file (expand-file-name (concat name ".diary") user-emacs-directory)))
+        (with-temp-buffer
+          (let ((ret (call-process "curl" nil '(t t) nil
+                                   "--output" icalendar-file
+                                   "--etag-save" icalendar-etag-file
+                                   "--etag-compare" icalendar-etag-file
+                                   "--verbose"
+                                   url)))
+            (unless (equal ret 0)
+              (error "curl failed to fetch `%s'! Returned %S, printed:\n%s" url ret (buffer-string)))))
+        (if (file-newer-than-file-p icalendar-file diary-file)
+            (progn
+              (ignore-errors (delete-file diary-file))
+              (let ((buffer (find-buffer-visiting diary-file)))
+                (when (bufferp buffer)
+                  (kill-buffer buffer)))
+              (let ((buffer (find-buffer-visiting icalendar-file)))
+                (when (bufferp buffer)
+                  (kill-buffer buffer)))
+              (icalendar-import-file icalendar-file diary-file))
+          (message "Diary file `%s' up-to-date" diary-file)))))
+
+  ;; Let's update calendars at startup
+  (my-diary-from-icalendar-urls)
+#+END_SRC
